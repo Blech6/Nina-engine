@@ -19,6 +19,14 @@ npm install
 npm start
 ```
 
+Para gerar os executáveis do Windows:
+```bash
+npm ci
+npm run desktop:build
+```
+
+O workflow **Build Windows EXE** também gera automaticamente dois arquivos: um instalador com atalhos e uma versão portátil que abre sem instalação.
+
 Set environment variables from `.env.example` before starting Electron.
 
 ## Android

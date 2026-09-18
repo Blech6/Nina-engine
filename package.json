@@ -6,12 +6,41 @@
   "main": "desktop/main.cjs",
   "scripts": {
     "start": "electron .",
+    "desktop:build": "electron-builder --win nsis portable",
     "android:prepare": "node tools/android-prepare.cjs",
     "android:build": "node tools/android-build.cjs",
     "android:debug": "node tools/android-build.cjs debug",
     "android:release": "node tools/android-build.cjs release"
   },
   "devDependencies": {
-    "electron": "^36.0.0"
+    "electron": "^36.0.0",
+    "electron-builder": "^26.0.12"
+  },
+  "build": {
+    "appId": "com.ninjaengine.editor",
+    "productName": "Ninja Engine",
+    "artifactName": "Ninja-Engine-v${version}-${arch}.${ext}",
+    "directories": {
+      "output": "dist-desktop"
+    },
+    "files": [
+      "desktop/**/*",
+      "src/**/*",
+      "package.json"
+    ],
+    "win": {
+      "icon": "build/icon.ico",
+      "target": [
+        { "target": "nsis", "arch": ["x64"] },
+        { "target": "portable", "arch": ["x64"] }
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Ninja Engine"
+    }
   }
 }
