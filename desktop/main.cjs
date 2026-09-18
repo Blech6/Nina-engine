@@ -36,6 +36,23 @@ ipcMain.handle('ninja:test-connection', async (_e, service)=>{
   }catch(e){ return {ok:false,message:e.message}; }
 });
 
+ipcMain.handle('ninja:create-project-folder', async (_e, project)=>{
+  const parent=await dialog.showOpenDialog({title:'Escolha onde criar o projeto',properties:['openDirectory','createDirectory']});
+  if(parent.canceled||!parent.filePaths[0])return null;
+  const safe=String(project?.name||'Novo Projeto').replace(/[<>:"/\\|?*]/g,'_').trim()||'Novo Projeto';
+  const dir=path.join(parent.filePaths[0],safe);await fs.mkdir(path.join(dir,'scenes'),{recursive:true});await fs.mkdir(path.join(dir,'assets'),{recursive:true});
+  const scene=project?.scene||{};await fs.writeFile(path.join(dir,'project.ninja.json'),JSON.stringify({engine:'Ninja Engine',version:'0.12',name:safe,main_scene:'scenes/Main.json'},null,2));
+  await fs.writeFile(path.join(dir,'scenes','Main.json'),JSON.stringify(scene,null,2));return {name:safe,filePath:dir};
+});
+ipcMain.handle('ninja:pick-project-folder', async ()=>{
+  const r=await dialog.showOpenDialog({title:'Importar/Abrir projeto',properties:['openDirectory']});if(r.canceled||!r.filePaths[0])return null;const dir=r.filePaths[0];
+  let meta=null,scene=null;try{meta=JSON.parse(await fs.readFile(path.join(dir,'project.ninja.json'),'utf8'));}catch{}
+  if(meta){try{scene=JSON.parse(await fs.readFile(path.join(dir,meta.main_scene||'scenes/Main.json'),'utf8'));}catch{}return {kind:'ninja',name:meta.name||path.basename(dir),filePath:dir,meta,scene};}
+  try{const godot=await fs.readFile(path.join(dir,'project.godot'),'utf8');return {kind:'godot',name:(godot.match(/config\\/name\\s*=\\s*"([^"]+)"/)||[])[1]||path.basename(dir),filePath:dir};}catch{}
+  throw new Error('A pasta não contém project.ninja.json nem project.godot');
+});
+ipcMain.handle('ninja:save-project-folder', async (_e,payload)=>{const dir=payload?.filePath;if(!dir)throw new Error('Projeto sem pasta');await fs.mkdir(path.join(dir,'scenes'),{recursive:true});await fs.writeFile(path.join(dir,'project.ninja.json'),JSON.stringify({engine:'Ninja Engine',version:'0.12',name:payload.name||path.basename(dir),main_scene:'scenes/Main.json'},null,2));await fs.writeFile(path.join(dir,'scenes','Main.json'),JSON.stringify(payload.scene||{},null,2));return {ok:true};});
+
 ipcMain.handle('ninja:pick-project-zip', async ()=>{
   const r=await dialog.showOpenDialog({title:'Importar projeto',properties:['openFile'],filters:[{name:'Projeto ZIP',extensions:['zip']}]});
   if(r.canceled||!r.filePaths[0])return null;
