@@ -39,7 +39,13 @@
   </section>
   <header class="titlebar">
     <div class="brand"><div class="brand-mark">忍</div><strong>Ninja Engine</strong><span>v0.12</span></div>
-    <nav class="menus"><button>Cena</button><button>Projeto</button><button>Depuração</button><button>Editor</button><button>Ajuda</button></nav>
+    <nav class="menus">
+      <div class="menu-root"><button data-menu="scene">Cena</button><div class="menu-popup" data-popup="scene"><button id="menuNewScene">Nova Cena <kbd>Ctrl+N</kbd></button><button id="menuOpenProject">Abrir Projeto… <kbd>Ctrl+O</kbd></button><button id="menuSaveScene">Salvar Cena <kbd>Ctrl+S</kbd></button><hr><button id="menuAddNode">Adicionar Nó <kbd>Ctrl+A</kbd></button><button id="menuQuit">Sair</button></div></div>
+      <div class="menu-root"><button data-menu="project">Projeto</button><div class="menu-popup" data-popup="project"><button id="menuProjectManager">Gerenciador de Projetos</button><button id="menuExportProject">Exportar Projeto…</button><hr><button disabled>Configurações do Projeto…</button></div></div>
+      <div class="menu-root"><button data-menu="debug">Depuração</button><div class="menu-popup" data-popup="debug"><button id="menuPlay">Executar Projeto <kbd>F6</kbd></button><button id="menuStop">Parar <kbd>F8</kbd></button><hr><button data-bottom-menu="output">Saída</button><button data-bottom-menu="debugger">Depurador</button><button data-bottom-menu="errors">Erros</button></div></div>
+      <div class="menu-root"><button data-menu="editor">Editor</button><div class="menu-popup" data-popup="editor"><button id="menuSpriteWorkspace">Sprite / Animação</button><button disabled>Configurações do Editor…</button></div></div>
+      <div class="menu-root"><button data-menu="help">Ajuda</button><div class="menu-popup" data-popup="help"><button id="menuAbout">Sobre a Ninja Engine</button></div></div>
+    </nav>
     <div class="title-actions">
       <button id="openBtn" title="Abrir projeto ZIP">▣</button>
       <button id="saveBtn" title="Salvar cena">▾</button>
