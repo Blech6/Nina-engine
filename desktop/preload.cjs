@@ -8,5 +8,8 @@ contextBridge.exposeInMainWorld('ninjaBridge',{
   pickProjectZip:()=>ipcRenderer.invoke('ninja:pick-project-zip'),
   createProjectFolder:(project)=>ipcRenderer.invoke('ninja:create-project-folder',project),
   pickProjectFolder:()=>ipcRenderer.invoke('ninja:pick-project-folder'),
-  saveProjectFolder:(payload)=>ipcRenderer.invoke('ninja:save-project-folder',payload)
+  openProjectPath:(filePath)=>ipcRenderer.invoke('ninja:open-project-path',filePath),
+  listProjectFiles:(filePath)=>ipcRenderer.invoke('ninja:list-project-files',filePath),
+  saveProjectFolder:(payload)=>ipcRenderer.invoke('ninja:save-project-folder',payload),
+  revealProject:(filePath)=>ipcRenderer.invoke('ninja:reveal-project',filePath)
 });
