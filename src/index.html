@@ -107,8 +107,7 @@
       </div>
       <div class="viewport-ruler ruler-x"></div><div class="viewport-tools">
         <div>
-          <button data-tool="select" class="tool active" title="Selecionar">↖</button><button class="tool" title="Editar">╱</button><button class="tool" title="Mover">✥</button><button class="tool" title="Rotacionar">↶</button><button class="tool" title="Escala">⌜</button>
-          <button data-tool="move" class="tool" title="Mover">✥</button>
+          <button data-tool="select" class="tool active" title="Selecionar (Q)">↖</button><button data-tool="move" class="tool" title="Mover (W)">✥</button><button data-tool="rotate" class="tool" title="Rotacionar (E)">↶</button><button data-tool="scale" class="tool" title="Escala (S)">⌜</button>
           <button data-tool="rect" class="tool" title="Retângulo">□</button>
           <button data-tool="collision" class="tool" title="Colisão">◇</button>
           <span class="divider"></span>
@@ -121,13 +120,13 @@
           <span id="zoomLabel">100%</span>
           <button id="zoomInBtn" class="tool">＋</button>
           <button id="fitBtn" class="tool" title="Enquadrar">⌖</button>
-          <button id="gridBtn" class="tool active" title="Grade">#</button><button class="tool">⋮</button>
+          <button id="gridBtn" class="tool active" title="Grade">#</button><button id="snapBtn" class="tool active" title="Ajustar à grade">⌗</button><button id="viewportOptionsBtn" class="tool">⋮</button>
         </div>
       </div>
       <div class="viewport-wrap">
         <canvas id="view" width="1100" height="680"></canvas>
         <div class="viewport-ruler ruler-y"></div><div class="axis-label x">X</div><div class="axis-label y">Y</div>
-        <div class="viewport-overlay"><span id="coord">x: 0 y: 0</span></div>
+        <div class="viewport-origin x-origin"></div><div class="viewport-origin y-origin"></div><div id="transformHud" class="transform-hud" hidden></div><div class="viewport-overlay"><span id="coord">x: 0 y: 0</span></div>
       </div>
       <section class="sprite-workspace" id="spriteWorkspace" hidden>
   <aside class="sprite-sheet-panel">
