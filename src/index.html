@@ -39,7 +39,7 @@
   </section>
   <header class="titlebar">
     <div class="brand"><div class="brand-mark">忍</div><strong>Ninja Engine</strong><span>v0.12</span></div>
-    <nav class="menus"><button>Scene</button><button>Project</button><button>Debug</button><button>Editor</button><button>Help</button></nav>
+    <nav class="menus"><button>Cena</button><button>Projeto</button><button>Depuração</button><button>Editor</button><button>Ajuda</button></nav>
     <div class="title-actions">
       <button id="openBtn" title="Abrir projeto ZIP">Open ZIP</button>
       <button id="saveBtn" title="Salvar cena">Save</button>
@@ -54,11 +54,11 @@
   <div class="editorbar">
     <div class="scene-chip"><span class="node-gem">◆</span><span id="projectStatus">No Project</span></div>
     <div class="workspace-modes">
-      <button class="mode active" data-mode="2d">▧ <span>2D</span></button>
+      <button class="mode active" data-mode="2d">⚑ <span>2D</span></button>
       <button class="mode planned" disabled title="Planejado">⬡ <span>3D</span></button>
-      <button class="mode planned" disabled title="Planejado">&lt;/&gt; <span>Script</span></button>
-      <button class="mode" data-mode="game">▣ <span>Game</span></button>
-      <button class="mode" data-mode="debug">⌁ <span>Debug</span></button>
+      <button class="mode planned" disabled title="Planejado">▰ <span>Script</span></button>
+      <button class="mode" data-mode="game">♟ <span>Jogo</span></button>
+      <button class="mode planned" disabled>⇩ <span>Biblioteca de Recursos</span></button>
     </div>
     <div class="run-actions">
       <button id="playBtn" class="run" title="Executar projeto">▶</button>
@@ -72,30 +72,22 @@
     <aside class="left-panel">
       <section class="dock scene-dock">
         <div class="dock-tabs">
-          <button class="tab active" data-tab="scene">Scene</button>
-          <button class="tab" data-tab="files">Import</button>
+          <button class="tab active" data-tab="scene">Cena</button>
+          <button class="tab" data-tab="files">Importar</button><button class="dock-more">⋮</button>
         </div>
         <div id="scenePane">
-          <div class="scene-toolbar">
-            <button id="newNodeBtn" title="Adicionar nó">＋</button>
-            <button id="newTileMapBtn" title="Adicionar TileMap">▦</button>
-            <button id="newAnimBtn" title="Adicionar AnimatedSprite">◈</button>
-            <span></span>
-            <button id="newSceneBtn" title="Nova cena">◇</button>
-            <button id="duplicateBtn" title="Duplicar">⧉</button>
-            <button id="deleteBtn" title="Excluir">⌫</button>
-          </div>
-          <div class="filter-row"><span>⌕</span><input aria-label="Filtrar nós" placeholder="Filter Nodes"></div>
+          <div class="scene-toolbar"><button id="newNodeBtn" title="Adicionar nó">＋</button><button title="Instanciar cena">⌁</button><span></span><button class="dock-more">⋮</button><button id="newTileMapBtn" hidden>▦</button><button id="newAnimBtn" hidden>◈</button><button id="newSceneBtn" hidden>◇</button><button id="duplicateBtn" hidden>⧉</button><button id="deleteBtn" hidden>⌫</button></div>
+          <div class="filter-row"><span>⌕</span><input aria-label="Filtrar nós" placeholder="Filtrar Nós"></div>
           <div id="sceneTree" class="tree"></div>
         </div>
         <div id="filesPane" hidden>
-          <div class="filter-row"><span>⌕</span><input id="searchFiles" placeholder="Filter Files"></div>
+          <div class="filter-row"><span>⌕</span><input id="searchFiles" placeholder="Filtrar Arquivos"></div>
           <div id="fileList" class="file-list"></div>
         </div>
       </section>
 
       <section class="dock filesystem-dock">
-        <div class="dock-title"><span>FileSystem</span><b id="assetCount">0</b></div>
+        <div class="dock-title"><span>Arquivos</span><b id="assetCount">0</b><button class="dock-more">⋮</button></div>
         <div class="path-row"><button title="Voltar">‹</button><button title="Avançar">›</button><span>res://</span></div>
         <div class="filter-row compact"><span>⌕</span><input id="searchAssets" placeholder="Filter Files"></div>
         <div id="assetList" class="asset-list"><div class="muted">Open a project to see assets.</div></div>
@@ -107,9 +99,9 @@
         <button class="scene-tab active"><span>◇</span><span id="sceneName">Untitled Scene</span><i>×</i></button>
         <button class="add-tab" title="Nova cena">＋</button>
       </div>
-      <div class="viewport-tools">
+      <div class="viewport-ruler ruler-x"></div><div class="viewport-tools">
         <div>
-          <button data-tool="select" class="tool active" title="Selecionar">↖</button>
+          <button data-tool="select" class="tool active" title="Selecionar">↖</button><button class="tool" title="Editar">╱</button><button class="tool" title="Mover">✥</button><button class="tool" title="Rotacionar">↶</button><button class="tool" title="Escala">⌜</button>
           <button data-tool="move" class="tool" title="Mover">✥</button>
           <button data-tool="rect" class="tool" title="Retângulo">□</button>
           <button data-tool="collision" class="tool" title="Colisão">◇</button>
@@ -123,21 +115,21 @@
           <span id="zoomLabel">100%</span>
           <button id="zoomInBtn" class="tool">＋</button>
           <button id="fitBtn" class="tool" title="Enquadrar">⌖</button>
-          <button id="gridBtn" class="tool active" title="Grade">#</button>
+          <button id="gridBtn" class="tool active" title="Grade">#</button><button class="tool">⋮</button>
         </div>
       </div>
       <div class="viewport-wrap">
         <canvas id="view" width="1100" height="680"></canvas>
-        <div class="axis-label x">X</div><div class="axis-label y">Y</div>
+        <div class="viewport-ruler ruler-y"></div><div class="axis-label x">X</div><div class="axis-label y">Y</div>
         <div class="viewport-overlay"><span id="coord">x: 0 y: 0</span></div>
       </div>
       <section class="bottom-panel">
         <div class="bottom-tabs">
-          <button class="bottom-tab active" data-bottom="output">Output</button>
-          <button class="bottom-tab" data-bottom="debugger">Debugger</button>
-          <button class="bottom-tab" data-bottom="errors">Errors <b id="errorCount">0</b></button>
-          <button class="bottom-tab planned" disabled>Animation</button>
-          <button class="bottom-tab planned" disabled>Audio</button>
+          <button class="bottom-tab active" data-bottom="output">Saída</button>
+          <button class="bottom-tab" data-bottom="debugger">Depurador</button>
+          <button class="bottom-tab" data-bottom="errors">Erros <b id="errorCount">0</b></button>
+          <button class="bottom-tab planned" disabled>Áudio</button>
+          <button class="bottom-tab planned" disabled>Animação</button><button class="bottom-tab planned" disabled>Editor de Shader</button>
           <span></span><button title="Fechar painel">⌄</button>
         </div>
         <div id="console" class="console"><div><i>●</i> Ninja Engine initialized.</div></div>
@@ -147,8 +139,8 @@
     </main>
 
     <aside class="right-panel">
-      <div class="dock-tabs inspector-tabs"><button class="active">Inspector</button><button disabled>Node</button><button disabled>History</button></div>
-      <div class="filter-row inspector-search"><span>⌕</span><input placeholder="Filter Properties"></div>
+      <div class="dock-tabs inspector-tabs"><button class="active">Inspetor</button><button>Sinais</button><button>Grupos</button><button class="dock-more">⋮</button></div><div class="inspector-actions"><button>▧＋</button><button>▱</button><button>▣</button><span></span><button>‹</button><button>›</button></div>
+      <div class="filter-row inspector-search"><span>⌕</span><input placeholder="Filtrar Propriedades"></div>
       <div class="object-header"><span class="object-icon">◇</span><div><strong id="selectedType">—</strong><small>Selected node</small></div></div>
       <div id="inspector" class="inspector"><div class="empty-state"><div class="empty-icon">◇</div><strong>Select a node</strong><span>Properties will appear here.</span></div></div>
       <section class="project-dock"><div class="dock-title">Project</div><div id="projectInfo" class="project-info"><span class="muted">No project loaded.</span></div></section>
