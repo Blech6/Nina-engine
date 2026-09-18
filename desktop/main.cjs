@@ -36,35 +36,58 @@ ipcMain.handle('ninja:test-connection', async (_e, service)=>{
   }catch(e){ return {ok:false,message:e.message}; }
 });
 
+function safeProjectName(name){return String(name||'Novo Projeto').replace(/[<>:"/\\|?*]/g,'_').trim()||'Novo Projeto';}
+async function readNinjaProject(dir){
+  const metaPath=path.join(dir,'project.ninja.json');
+  const meta=JSON.parse(await fs.readFile(metaPath,'utf8'));
+  const sceneRel=meta.main_scene||'scenes/Main.json';
+  const scene=JSON.parse(await fs.readFile(path.join(dir,sceneRel),'utf8'));
+  return {kind:'ninja',name:meta.name||path.basename(dir),filePath:dir,meta,scene};
+}
+async function listProjectFiles(dir,base=dir,out=[]){
+  for(const ent of await fs.readdir(dir,{withFileTypes:true})){
+    if(ent.name==='node_modules'||ent.name==='.git')continue;
+    const full=path.join(dir,ent.name),rel=path.relative(base,full).split(path.sep).join('/');
+    if(ent.isDirectory()){out.push({path:rel+'/',name:ent.name,type:'dir'});await listProjectFiles(full,base,out);}
+    else out.push({path:rel,name:ent.name,type:'file'});
+    if(out.length>=2000)break;
+  }
+  return out;
+}
 ipcMain.handle('ninja:create-project-folder', async (_e, project)=>{
-  const parent=await dialog.showOpenDialog({title:'Escolha onde criar o projeto',properties:['openDirectory','createDirectory']});
+  const parent=await dialog.showOpenDialog({title:'Criar projeto — escolha a pasta onde ele será salvo',buttonLabel:'Selecionar pasta',properties:['openDirectory','createDirectory']});
   if(parent.canceled||!parent.filePaths[0])return null;
-  const safe=String(project?.name||'Novo Projeto').replace(/[<>:"/\\|?*]/g,'_').trim()||'Novo Projeto';
-  const dir=path.join(parent.filePaths[0],safe);await fs.mkdir(path.join(dir,'scenes'),{recursive:true});await fs.mkdir(path.join(dir,'assets'),{recursive:true});
-  const scene=project?.scene||{};await fs.writeFile(path.join(dir,'project.ninja.json'),JSON.stringify({engine:'Ninja Engine',version:'0.12',name:safe,main_scene:'scenes/Main.json'},null,2));
-  await fs.writeFile(path.join(dir,'scenes','Main.json'),JSON.stringify(scene,null,2));return {name:safe,filePath:dir};
+  const safe=safeProjectName(project?.name),dir=path.join(parent.filePaths[0],safe);
+  try{await fs.access(dir);throw new Error('Já existe uma pasta com esse nome. Escolha outro nome.');}catch(err){if(err.code!=='ENOENT')throw err;}
+  await fs.mkdir(path.join(dir,'scenes'),{recursive:true});await fs.mkdir(path.join(dir,'assets'),{recursive:true});await fs.mkdir(path.join(dir,'scripts'),{recursive:true});
+  const scene=project?.scene||{};
+  await fs.writeFile(path.join(dir,'project.ninja.json'),JSON.stringify({engine:'Ninja Engine',version:'0.12',name:safe,main_scene:'scenes/Main.json'},null,2));
+  await fs.writeFile(path.join(dir,'scenes','Main.json'),JSON.stringify(scene,null,2));
+  return {...await readNinjaProject(dir),files:await listProjectFiles(dir)};
 });
 ipcMain.handle('ninja:pick-project-folder', async ()=>{
-  const r=await dialog.showOpenDialog({title:'Importar/Abrir projeto',properties:['openDirectory']});if(r.canceled||!r.filePaths[0])return null;const dir=r.filePaths[0];
-  let meta=null,scene=null;try{meta=JSON.parse(await fs.readFile(path.join(dir,'project.ninja.json'),'utf8'));}catch{}
-  if(meta){try{scene=JSON.parse(await fs.readFile(path.join(dir,meta.main_scene||'scenes/Main.json'),'utf8'));}catch{}return {kind:'ninja',name:meta.name||path.basename(dir),filePath:dir,meta,scene};}
-  try{const godot=await fs.readFile(path.join(dir,'project.godot'),'utf8');return {kind:'godot',name:(godot.match(new RegExp('config/name\\\\s*=\\\\s*"([^"]+)"'))||[])[1]||path.basename(dir),filePath:dir};}catch{}
-  throw new Error('A pasta não contém project.ninja.json nem project.godot');
-});
-ipcMain.handle('ninja:save-project-folder', async (_e,payload)=>{const dir=payload?.filePath;if(!dir)throw new Error('Projeto sem pasta');await fs.mkdir(path.join(dir,'scenes'),{recursive:true});await fs.writeFile(path.join(dir,'project.ninja.json'),JSON.stringify({engine:'Ninja Engine',version:'0.12',name:payload.name||path.basename(dir),main_scene:'scenes/Main.json'},null,2));await fs.writeFile(path.join(dir,'scenes','Main.json'),JSON.stringify(payload.scene||{},null,2));return {ok:true};});
-
-ipcMain.handle('ninja:pick-project-zip', async ()=>{
-  const r=await dialog.showOpenDialog({title:'Importar projeto',properties:['openFile'],filters:[{name:'Projeto ZIP',extensions:['zip']}]});
+  const r=await dialog.showOpenDialog({title:'Abrir projeto Ninja',buttonLabel:'Abrir projeto',properties:['openDirectory']});
   if(r.canceled||!r.filePaths[0])return null;
-  const filePath=r.filePaths[0],data=await fs.readFile(filePath);
-  return {name:path.basename(filePath),filePath,data};
+  const dir=r.filePaths[0];
+  try{return {...await readNinjaProject(dir),files:await listProjectFiles(dir)};}
+  catch(err){throw new Error('Selecione a pasta raiz de um projeto Ninja (ela precisa conter project.ninja.json).');}
 });
-
-ipcMain.handle('ninja:read-project-file', async (_e, filePath)=>{
-  if(!filePath || typeof filePath!=='string') throw new Error('Invalid project path');
-  const data=await fs.readFile(filePath);
-  return {name:path.basename(filePath),data};
+ipcMain.handle('ninja:open-project-path', async (_e,dir)=>{
+  if(!dir||typeof dir!=='string')throw new Error('Caminho de projeto inválido.');
+  return {...await readNinjaProject(dir),files:await listProjectFiles(dir)};
 });
+ipcMain.handle('ninja:list-project-files', async (_e,dir)=>{
+  if(!dir||typeof dir!=='string')return [];
+  return listProjectFiles(dir);
+});
+ipcMain.handle('ninja:save-project-folder', async (_e,payload)=>{
+  const dir=payload?.filePath;if(!dir)throw new Error('Projeto sem pasta.');
+  await fs.mkdir(path.join(dir,'scenes'),{recursive:true});await fs.mkdir(path.join(dir,'assets'),{recursive:true});await fs.mkdir(path.join(dir,'scripts'),{recursive:true});
+  await fs.writeFile(path.join(dir,'project.ninja.json'),JSON.stringify({engine:'Ninja Engine',version:'0.12',name:payload.name||path.basename(dir),main_scene:'scenes/Main.json'},null,2));
+  await fs.writeFile(path.join(dir,'scenes','Main.json'),JSON.stringify(payload.scene||{},null,2));
+  return {ok:true,files:await listProjectFiles(dir)};
+});
+ipcMain.handle('ninja:reveal-project', async (_e,dir)=>{if(dir)require('electron').shell.openPath(dir);return {ok:true};});
 
 ipcMain.handle('ninja:ai', async (_e, payload)=>{
   if(!env('OPENAI_API_KEY')) throw new Error('OPENAI_API_KEY not configured');
