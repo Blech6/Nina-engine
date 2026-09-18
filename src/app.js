@@ -38,6 +38,9 @@ async function testConnection(service,id){
   if(!window.ninjaBridge)return; const r=await window.ninjaBridge.testConnection(service); $(id).textContent=r.message|| (r.ok?'Connected':'Unavailable'); log(`${service}: ${r.message}`,r.ok?'info':'warn');
 }
 $('connectionsBtn').onclick=()=>{const p=$('connectionsPanel');p.hidden=!p.hidden;if(!p.hidden)refreshConnections();};
+$('closeConnectionsBtn').onclick=()=>$('connectionsPanel').hidden=true;
+$('mobileMenuBtn').onclick=()=>{document.querySelector('.left-panel').classList.toggle('mobile-open');document.querySelector('.right-panel').classList.remove('mobile-open');};
+$('mobileInspectorBtn').onclick=()=>{document.querySelector('.right-panel').classList.toggle('mobile-open');document.querySelector('.left-panel').classList.remove('mobile-open');};
 $('aiConnectBtn').onclick=()=>testConnection('ai','aiStatus');$('notionConnectBtn').onclick=()=>testConnection('notion','notionStatus');$('githubConnectBtn').onclick=()=>testConnection('github','githubStatus');
 $('openBtn').onclick=()=>$('zipInput').click();
 $('zipInput').onchange=e=>e.target.files[0]&&openZip(e.target.files[0]);

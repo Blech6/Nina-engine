@@ -1,25 +1,147 @@
 <!doctype html>
 <html lang="pt-BR">
-<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no"><meta name="theme-color" content="#090d14"><link rel="manifest" href="manifest.webmanifest"><title>Ninja Engine</title><link rel="stylesheet" href="style.css"></head>
-<body><div class="app">
-<header class="topbar">
-  <div class="brand"><div class="brand-mark">忍</div><div><strong>NINJA ENGINE</strong><small>2D RPG DEVELOPMENT</small></div></div>
-  <nav class="menus"><button>File</button><button>Edit</button><button>Project</button><button>Scene</button><button>Assets</button><button>Debug</button><button>Build</button><button id="connectionsBtn">Connections</button></nav>
-  <div class="top-actions"><span id="projectStatus">No Project</span><button id="openBtn">Open ZIP</button><button id="mobileMenuBtn" class="mobile-only">☰</button><button id="saveBtn">Save Scene</button><button id="exportBtn">Export</button><button class="play" id="playBtn">▶ Play</button><button class="danger" id="stopBtn">■ Stop</button><input id="zipInput" type="file" accept=".zip,application/zip" hidden></div>
-</header>
-<div class="workspace">
-<aside class="left-panel">
-  <div class="panel-tabs"><button class="tab active" data-tab="scene">SCENE</button><button class="tab" data-tab="files">FILES</button></div>
-  <section id="scenePane"><div class="scene-toolbar"><button id="newNodeBtn">＋ Node</button><button id="newTileMapBtn">＋ TileMap</button><button id="newAnimBtn">＋ Animated</button><button id="newSceneBtn">＋ Scene</button><button id="duplicateBtn">⧉</button><button id="deleteBtn">⌫</button></div><div id="sceneTree" class="tree"></div></section>
-  <section id="filesPane" hidden><div class="search"><input id="searchFiles" placeholder="Search project files…"></div><div id="fileList" class="file-list"></div></section>
-  <div class="left-bottom"><div class="panel-title">ASSETS <span id="assetCount">0</span></div><div class="search compact"><input id="searchAssets" placeholder="Filter assets…"></div><div id="assetList" class="asset-list"><div class="muted">Open a project to see assets.</div></div></div>
-</aside>
-<main class="center">
-  <div class="modebar"><div class="mode-tabs"><button class="mode active" data-mode="2d">2D</button><button class="mode" data-mode="game">GAME</button><button class="mode" data-mode="debug">DEBUG</button></div><div class="viewport-tools"><button data-tool="select" class="tool active">↖</button><button data-tool="move" class="tool">✥</button><button data-tool="rect" class="tool">□</button><button data-tool="collision" class="tool">◇</button><button data-tool="river" class="tool">≋</button><button data-tool="spawn" class="tool">⌾</button><button data-tool="tilepaint" class="tool">▦</button><span class="divider"></span><button id="zoomOutBtn" class="tool">−</button><span id="zoomLabel">100%</span><button id="zoomInBtn" class="tool">＋</button><button id="fitBtn" class="tool">⌖</button><button id="gridBtn" class="tool active">▦</button></div></div>
-  <div class="viewport-wrap"><canvas id="view" width="1100" height="680"></canvas><div class="viewport-overlay"><span id="sceneName">Untitled Scene</span><span id="coord">x: 0 y: 0</span></div></div>
-  <div class="bottom-panel"><div class="bottom-tabs"><button class="bottom-tab active" data-bottom="output">OUTPUT</button><button class="bottom-tab" data-bottom="debugger">DEBUGGER</button><button class="bottom-tab" data-bottom="errors">ERRORS <b id="errorCount">0</b></button></div><div id="console" class="console"><div><i>●</i> Ninja Engine initialized.</div></div><div id="debugger" class="console" hidden>Runtime debugger ready.</div><div id="errors" class="console" hidden>No errors.</div></div>
-</main>
-<aside class="right-panel"><div id="connectionsPanel" class="connections-panel" hidden><div class="panel-title">CONNECTIONS</div><div class="connection-card"><b>AI Assistant</b><span id="aiStatus">Checking…</span><button id="aiConnectBtn">Test connection</button></div><div class="connection-card"><b>Notion</b><span id="notionStatus">Checking…</span><button id="notionConnectBtn">Test connection</button></div><div class="connection-card"><b>GitHub</b><span id="githubStatus">Checking…</span><button id="githubConnectBtn">Test connection</button></div><div class="muted connection-note">Configure credentials through the desktop environment. Secrets are kept out of the editor UI.</div></div><div class="panel-title inspector-title">INSPECTOR <span id="selectedType">—</span></div><div id="inspector" class="inspector"><div class="empty-state"><div class="empty-icon">◇</div><strong>Select a node</strong><span>Properties will appear here.</span></div></div><div class="panel-title">PROJECT</div><div id="projectInfo" class="project-info"><span class="muted">No project loaded.</span></div></aside>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+  <meta name="theme-color" content="#202531">
+  <link rel="manifest" href="manifest.webmanifest">
+  <title>Ninja Engine</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="app">
+  <header class="titlebar">
+    <div class="brand"><div class="brand-mark">忍</div><strong>Ninja Engine</strong><span>v0.12</span></div>
+    <nav class="menus"><button>Scene</button><button>Project</button><button>Debug</button><button>Editor</button><button>Help</button></nav>
+    <div class="title-actions">
+      <button id="openBtn" title="Abrir projeto ZIP">Open ZIP</button>
+      <button id="saveBtn" title="Salvar cena">Save</button>
+      <button id="exportBtn" title="Exportar projeto">Export</button>
+      <button id="connectionsBtn" title="Conexões">⌁</button>
+      <button id="mobileMenuBtn" class="mobile-only" title="Cena e arquivos">☰</button>
+      <button id="mobileInspectorBtn" class="mobile-only" title="Inspector">⚙</button>
+      <input id="zipInput" type="file" accept=".zip,application/zip" hidden>
+    </div>
+  </header>
+
+  <div class="editorbar">
+    <div class="scene-chip"><span class="node-gem">◆</span><span id="projectStatus">No Project</span></div>
+    <div class="workspace-modes">
+      <button class="mode active" data-mode="2d">▧ <span>2D</span></button>
+      <button class="mode planned" disabled title="Planejado">⬡ <span>3D</span></button>
+      <button class="mode planned" disabled title="Planejado">&lt;/&gt; <span>Script</span></button>
+      <button class="mode" data-mode="game">▣ <span>Game</span></button>
+      <button class="mode" data-mode="debug">⌁ <span>Debug</span></button>
+    </div>
+    <div class="run-actions">
+      <button id="playBtn" class="run" title="Executar projeto">▶</button>
+      <button class="run secondary" title="Executar cena" disabled>▶▯</button>
+      <button class="run secondary" title="Pausar" disabled>Ⅱ</button>
+      <button id="stopBtn" class="stop" title="Parar">■</button>
+    </div>
+  </div>
+
+  <div class="workspace">
+    <aside class="left-panel">
+      <section class="dock scene-dock">
+        <div class="dock-tabs">
+          <button class="tab active" data-tab="scene">Scene</button>
+          <button class="tab" data-tab="files">Import</button>
+        </div>
+        <div id="scenePane">
+          <div class="scene-toolbar">
+            <button id="newNodeBtn" title="Adicionar nó">＋</button>
+            <button id="newTileMapBtn" title="Adicionar TileMap">▦</button>
+            <button id="newAnimBtn" title="Adicionar AnimatedSprite">◈</button>
+            <span></span>
+            <button id="newSceneBtn" title="Nova cena">◇</button>
+            <button id="duplicateBtn" title="Duplicar">⧉</button>
+            <button id="deleteBtn" title="Excluir">⌫</button>
+          </div>
+          <div class="filter-row"><span>⌕</span><input aria-label="Filtrar nós" placeholder="Filter Nodes"></div>
+          <div id="sceneTree" class="tree"></div>
+        </div>
+        <div id="filesPane" hidden>
+          <div class="filter-row"><span>⌕</span><input id="searchFiles" placeholder="Filter Files"></div>
+          <div id="fileList" class="file-list"></div>
+        </div>
+      </section>
+
+      <section class="dock filesystem-dock">
+        <div class="dock-title"><span>FileSystem</span><b id="assetCount">0</b></div>
+        <div class="path-row"><button title="Voltar">‹</button><button title="Avançar">›</button><span>res://</span></div>
+        <div class="filter-row compact"><span>⌕</span><input id="searchAssets" placeholder="Filter Files"></div>
+        <div id="assetList" class="asset-list"><div class="muted">Open a project to see assets.</div></div>
+      </section>
+    </aside>
+
+    <main class="center">
+      <div class="scene-tabs">
+        <button class="scene-tab active"><span>◇</span><span id="sceneName">Untitled Scene</span><i>×</i></button>
+        <button class="add-tab" title="Nova cena">＋</button>
+      </div>
+      <div class="viewport-tools">
+        <div>
+          <button data-tool="select" class="tool active" title="Selecionar">↖</button>
+          <button data-tool="move" class="tool" title="Mover">✥</button>
+          <button data-tool="rect" class="tool" title="Retângulo">□</button>
+          <button data-tool="collision" class="tool" title="Colisão">◇</button>
+          <span class="divider"></span>
+          <button data-tool="river" class="tool" title="Rio">≋</button>
+          <button data-tool="spawn" class="tool" title="Spawn">⌾</button>
+          <button data-tool="tilepaint" class="tool" title="Pintar tiles">▦</button>
+        </div>
+        <div>
+          <button id="zoomOutBtn" class="tool">−</button>
+          <span id="zoomLabel">100%</span>
+          <button id="zoomInBtn" class="tool">＋</button>
+          <button id="fitBtn" class="tool" title="Enquadrar">⌖</button>
+          <button id="gridBtn" class="tool active" title="Grade">#</button>
+        </div>
+      </div>
+      <div class="viewport-wrap">
+        <canvas id="view" width="1100" height="680"></canvas>
+        <div class="axis-label x">X</div><div class="axis-label y">Y</div>
+        <div class="viewport-overlay"><span id="coord">x: 0 y: 0</span></div>
+      </div>
+      <section class="bottom-panel">
+        <div class="bottom-tabs">
+          <button class="bottom-tab active" data-bottom="output">Output</button>
+          <button class="bottom-tab" data-bottom="debugger">Debugger</button>
+          <button class="bottom-tab" data-bottom="errors">Errors <b id="errorCount">0</b></button>
+          <button class="bottom-tab planned" disabled>Animation</button>
+          <button class="bottom-tab planned" disabled>Audio</button>
+          <span></span><button title="Fechar painel">⌄</button>
+        </div>
+        <div id="console" class="console"><div><i>●</i> Ninja Engine initialized.</div></div>
+        <div id="debugger" class="console" hidden>Runtime debugger ready.</div>
+        <div id="errors" class="console" hidden>No errors.</div>
+      </section>
+    </main>
+
+    <aside class="right-panel">
+      <div class="dock-tabs inspector-tabs"><button class="active">Inspector</button><button disabled>Node</button><button disabled>History</button></div>
+      <div class="filter-row inspector-search"><span>⌕</span><input placeholder="Filter Properties"></div>
+      <div class="object-header"><span class="object-icon">◇</span><div><strong id="selectedType">—</strong><small>Selected node</small></div></div>
+      <div id="inspector" class="inspector"><div class="empty-state"><div class="empty-icon">◇</div><strong>Select a node</strong><span>Properties will appear here.</span></div></div>
+      <section class="project-dock"><div class="dock-title">Project</div><div id="projectInfo" class="project-info"><span class="muted">No project loaded.</span></div></section>
+    </aside>
+  </div>
+
+  <div id="connectionsPanel" class="connections-panel" hidden>
+    <div class="connection-heading"><strong>Connections</strong><button id="closeConnectionsBtn">×</button></div>
+    <div class="connection-card"><b>AI Assistant</b><span id="aiStatus">Checking…</span><button id="aiConnectBtn">Test</button></div>
+    <div class="connection-card"><b>Notion</b><span id="notionStatus">Checking…</span><button id="notionConnectBtn">Test</button></div>
+    <div class="connection-card"><b>GitHub</b><span id="githubStatus">Checking…</span><button id="githubConnectBtn">Test</button></div>
+    <p class="muted">Credentials stay outside the editor interface.</p>
+  </div>
+
+  <footer class="statusbar">
+    <span id="statusText">Ready</span><span id="connectionSummary">Connections: checking…</span>
+    <span class="spacer"></span><span>FPS <b id="fps">60</b></span><span>Nodes <b id="objectCount">0</b></span>
+    <span>Memory <b id="memory">—</b></span><span id="dirtyState"></span><span>Ninja 2D</span>
+  </footer>
 </div>
-<div class="statusbar"><span id="statusText">Ready</span><span id="connectionSummary">Connections: checking…</span><span>FPS <b id="fps">60</b></span><span>Nodes <b id="objectCount">0</b></span><span>Memory <b id="memory">—</b></span><span id="dirtyState"></span><span>v0.12 Tilemap</span></div>
-</div><script type="module" src="app.js"></script></body></html>
+<script type="module" src="app.js"></script>
+</body>
+</html>
