@@ -102,6 +102,23 @@ function openNodeDialog(){
   $('nodeCreateConfirm').onclick=()=>{if(!chosen)return;const before=snapshot();const n=addNode(chosen);state.selected=n;commit(`Create ${chosen}`,before);modal.remove();renderAll();};
 }
 
+
+function initEditorMenus(){
+  const roots=[...document.querySelectorAll('.menu-root')];
+  const close=()=>roots.forEach(r=>r.classList.remove('open'));
+  roots.forEach(root=>{const trigger=root.querySelector(':scope > button');trigger.onclick=e=>{e.stopPropagation();const was=root.classList.contains('open');close();if(!was)root.classList.add('open');};});
+  document.addEventListener('click',e=>{if(!e.target.closest('.menu-root'))close();});
+  document.addEventListener('keydown',e=>{if(e.key==='Escape')close();if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='s'){e.preventDefault();$('saveBtn')?.click();}if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='o'){e.preventDefault();$('openBtn')?.click();}});
+  const bind=(id,target)=>{const a=$(id),b=$(target);if(a&&b)a.onclick=()=>{close();b.click();};};
+  bind('menuNewScene','newSceneBtn');bind('menuOpenProject','openBtn');bind('menuSaveScene','saveBtn');bind('menuAddNode','newNodeBtn');bind('menuExportProject','exportBtn');bind('menuPlay','playBtn');bind('menuStop','stopBtn');
+  $('menuProjectManager').onclick=()=>{close();showProjectManager();};
+  $('menuSpriteWorkspace').onclick=()=>{close();state.mode='sprite';syncModes();};
+  document.querySelectorAll('[data-bottom-menu]').forEach(b=>b.onclick=()=>{close();toggleBottomPanel(b.dataset.bottomMenu);});
+  $('menuQuit').onclick=()=>{close();if(window.ninjaDesktop?.quit)window.ninjaDesktop.quit();else if(confirm('Fechar a Ninja Engine?'))window.close();};
+  $('menuAbout').onclick=()=>{close();const d=document.createElement('div');d.className='about-dialog';d.innerHTML='<section class="about-dialog-card"><header>Sobre a Ninja Engine<button id="closeAbout">×</button></header><main><div class="brand-mark">忍</div><h2>Ninja Engine</h2><p>Versão 0.12<br>Editor 2D, cenas, runtime e fluxo integrado de spritesheets e animações.</p></main></section>';document.body.appendChild(d);d.onclick=e=>{if(e.target===d||e.target.id==='closeAbout')d.remove();};};
+}
+initEditorMenus();
+
 function initSpriteWorkspace(){
   const strip=$('frameStrip'), input=$('spriteImageInput'), canvas=$('spriteCanvas'); if(!strip||!input||!canvas)return;
   const sctx=canvas.getContext('2d',{alpha:true}); sctx.imageSmoothingEnabled=false;
