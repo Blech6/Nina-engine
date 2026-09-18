@@ -176,3 +176,32 @@ button:disabled{filter:saturate(.5);opacity:.38}
 @media(min-width:1200px){.workspace{grid-template-columns:240px minmax(600px,1fr) 240px}}
 
 .node-dialog-backdrop{position:fixed;z-index:300;inset:0;background:#0005;display:grid;place-items:center}.node-dialog{width:min(760px,75vw);height:min(630px,78vh);background:#292929;border:1px solid #181818;box-shadow:0 15px 45px #000a;color:#d0d0d0}.node-dialog-title{height:31px;background:#101010;display:flex;align-items:center;padding:0 10px}.node-dialog-title button{margin-left:auto;color:#ddd;font-size:20px}.node-dialog-body{height:calc(100% - 76px);display:grid;grid-template-columns:135px 1fr;gap:8px;padding:10px}.node-dialog-body aside{display:flex;flex-direction:column;gap:8px}.node-sidebox{flex:1;background:#202020;border-radius:3px}.node-sidebox.small{flex:.55}.node-dialog-body main{display:flex;flex-direction:column;min-width:0}.node-dialog-body main>label{display:grid;grid-template-columns:100px 1fr;align-items:center;gap:6px}.node-dialog-body input{height:28px;background:#171717;border:1px solid #58a6e7;color:#eee;padding:0 8px;border-radius:3px}.node-match-title{display:flex;justify-content:space-between;padding:8px 5px 5px}.node-type-list{flex:1;overflow:auto;background:#202020;padding:5px}.node-group>div{padding:4px}.node-group button{display:block;width:100%;height:25px;text-align:left;color:#ccc}.node-group button:hover,.node-group button.selected{background:#454545}.node-description{height:92px;margin-top:5px;background:#202020;padding:8px;overflow:auto}.node-description strong{color:#68aee5}.node-description p{margin:6px 0;font-size:11px}.node-dialog-actions{height:45px;display:flex;justify-content:center;gap:190px;align-items:center}.node-dialog-actions button{min-width:90px;height:31px;background:#414141;border-radius:4px;color:#ddd}.node-dialog-actions button:disabled{opacity:.4}
+
+/* Ninja Engine UI system — Figma calibrated against Godot desktop reference */
+:root{
+ --gd-window:#121212;--gd-panel:#252525;--gd-panel-2:#202020;--gd-field:#171717;
+ --gd-selected:#464646;--gd-viewport:#505050;--gd-border:#151515;
+ --gd-text:#c8c8c8;--gd-muted:#777;--gd-accent:#58a6e7;--gd-green:#75b96f;--gd-pink:#d06b99;
+}
+body{font-family:Inter,"Segoe UI",Arial,sans-serif;font-size:12px;background:var(--gd-window);color:var(--gd-text)}
+button,input,select{font:inherit}
+.titlebar{height:34px;background:var(--gd-window)!important;border-bottom:0!important}
+.menus{height:34px;display:flex;align-items:center}.menus button{height:28px;padding:0 9px;font-size:11px;font-weight:400}
+.editorbar{height:45px!important;background:var(--gd-window)!important;grid-template-columns:240px 1fr 240px!important}
+.workspace-modes{gap:2px!important}.mode{height:32px!important;padding:0 9px!important;border-radius:4px!important;font-size:12px!important}.mode.active{color:var(--gd-accent)!important}
+.workspace{grid-template-columns:240px minmax(560px,1fr) 240px!important;background:var(--gd-panel-2)!important}
+.left-panel,.right-panel{background:var(--gd-panel)!important;border-color:var(--gd-border)!important}
+.dock-tabs,.dock-title,.scene-toolbar,.viewport-tools,.inspector-tabs,.inspector-actions{background:var(--gd-panel)!important;border-color:var(--gd-border)!important}
+.dock-tabs,.scene-tabs{height:34px!important}.scene-toolbar,.inspector-actions{height:36px!important}
+.filter-row,.inspector-search,.path-row{background:var(--gd-field)!important;border:0!important;border-radius:4px!important}
+.tree-row{height:31px!important;border-radius:2px!important}.tree-row.selected{background:var(--gd-selected)!important}
+.center{background:var(--gd-panel-2)!important}.scene-tabs{background:var(--gd-panel-2)!important}
+.viewport-tools{height:38px!important}.viewport-wrap{background:var(--gd-viewport)!important}
+#view{background:var(--gd-viewport)!important;border-color:#686868!important}
+.bottom-panel{height:38px!important;background:var(--gd-panel-2)!important}.bottom-tabs{height:38px!important;background:var(--gd-panel-2)!important}
+.bottom-tab{height:38px!important;font-size:11px!important}
+.object-header{background:#2b2b2b!important}.property-header{background:#202020!important}.property input,.property select{background:#303030!important;border:0!important}
+.node-dialog{background:#292929!important;width:min(760px,78vw)!important;height:min(630px,82vh)!important}
+.node-dialog-title{height:31px!important;background:#101010!important}.node-type-list,.node-sidebox,.node-description{background:#202020!important}
+.node-dialog-body input{background:#171717!important;border:1px solid var(--gd-accent)!important}
+.node-dialog-actions button{background:#414141!important}
