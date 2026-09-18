@@ -103,27 +103,58 @@ function openNodeDialog(){
 }
 
 function initSpriteWorkspace(){
-  const strip=$('frameStrip'); if(!strip)return;
-  const frames=[1,2,3,4]; let active=0; let playing=false; let timer=null;
-  const render=()=>{strip.innerHTML=frames.map((n,i)=>`<button class="frame-card ${i===active?'active':''}" data-frame="${i}"><div class="frame-preview"></div><span>${i+1}</span></button>`).join('');strip.querySelectorAll('[data-frame]').forEach(b=>b.onclick=()=>{active=Number(b.dataset.frame);render();});};
+  const strip=$('frameStrip'), input=$('spriteImageInput'), canvas=$('spriteCanvas'); if(!strip||!input||!canvas)return;
+  const sctx=canvas.getContext('2d',{alpha:true}); sctx.imageSmoothingEnabled=false;
+  const animations=new Map([['Idle',[]],['Walk',[]],['Run',[]],['Attack',[]],['Jump',[]]]);
+  let activeAnim='Idle',active=0,img=null,imgUrl='',zoom=1,playing=false,timer=null;
+  const frames=()=>animations.get(activeAnim)||[];
+  function syncFields(){
+    $('animationName').value=activeAnim;$('spriteFpsSide').value=$('spriteFps').value;$('spriteLoopSide').checked=$('spriteLoop').checked;
+    $('spriteWidthSide').value=$('spriteWidth').value;$('spriteHeightSide').value=$('spriteHeight').value;
+  }
+  function drawSheet(){
+    sctx.clearRect(0,0,canvas.width,canvas.height);if(!img)return;
+    const fw=Math.max(1,+$('spriteWidth').value||64),fh=Math.max(1,+$('spriteHeight').value||64);
+    canvas.width=Math.max(896,Math.ceil(img.width*zoom));canvas.height=Math.max(416,Math.ceil(img.height*zoom));
+    sctx.imageSmoothingEnabled=false;sctx.drawImage(img,0,0,img.width*zoom,img.height*zoom);
+    sctx.strokeStyle='#58a6e7';sctx.lineWidth=1;
+    for(let x=0;x<=img.width;x+=fw){sctx.beginPath();sctx.moveTo(x*zoom,0);sctx.lineTo(x*zoom,img.height*zoom);sctx.stroke();}
+    for(let y=0;y<=img.height;y+=fh){sctx.beginPath();sctx.moveTo(0,y*zoom);sctx.lineTo(img.width*zoom,y*zoom);sctx.stroke();}
+    $('spriteEmptyHint').hidden=true;
+  }
+  function render(){
+    strip.innerHTML=frames().length?frames().map((f,i)=>\`<button class="frame-card \${i===active?'active':''}" data-frame="\${i}"><div class="frame-preview" style="background-image:url('\${imgUrl}');background-size:\${f.sheetW/f.w*62}px \${f.sheetH/f.h*62}px;background-position:-\${f.x/f.w*62}px -\${f.y/f.h*62}px"></div><span>\${i+1}</span></button>\`).join(''):'<div class="muted">Nenhum quadro. Importe e recorte uma spritesheet.</div>';
+    strip.querySelectorAll('[data-frame]').forEach(b=>b.onclick=()=>{active=+b.dataset.frame;render();});syncFields();
+  }
+  function slice(){
+    if(!img)return;const fw=Math.max(1,+$('spriteWidth').value||64),fh=Math.max(1,+$('spriteHeight').value||64),out=[];
+    for(let y=0;y+fh<=img.height;y+=fh)for(let x=0;x+fw<=img.width;x+=fw)out.push({x,y,w:fw,h:fh,sheetW:img.width,sheetH:img.height});
+    animations.set(activeAnim,out);active=0;$('spriteColumns').value=Math.floor(img.width/fw);$('spriteRows').value=Math.floor(img.height/fh);render();drawSheet();
+  }
+  $('spriteImportBtn').onclick=()=>input.click();
+  input.onchange=e=>{const file=e.target.files?.[0];if(!file)return;if(imgUrl)URL.revokeObjectURL(imgUrl);imgUrl=URL.createObjectURL(file);img=new Image();img.onload=()=>{slice();drawSheet();};img.src=imgUrl;};
+  $('autoSliceBtn').onclick=slice;
+  const duration=()=>{$('spriteDuration').textContent=(1/Math.max(1,+$('spriteFps').value||12)).toFixed(3)+' s';syncFields();if(playing)play();};$('spriteFps').oninput=duration;duration();
+  const step=()=>{const fs=frames();if(!fs.length)return;if(active>=fs.length-1){if($('spriteLoop').checked)active=0;else return stop();}else active++;render();};
+  function play(){clearInterval(timer);playing=true;timer=setInterval(step,1000/Math.max(1,+$('spriteFps').value||12));}
+  function stop(){playing=false;clearInterval(timer);active=0;render();}
+  $('spritePlayBtn').onclick=play;$('spritePauseBtn').onclick=()=>{playing=false;clearInterval(timer)};$('spriteStopBtn').onclick=stop;
+  $('addFrameBtn').onclick=()=>{const fs=frames();const base=fs[active]||{x:0,y:0,w:+$('spriteWidth').value||64,h:+$('spriteHeight').value||64,sheetW:img?.width||64,sheetH:img?.height||64};fs.push({...base});active=fs.length-1;render();};
+  $('duplicateFrameBtn').onclick=()=>{const fs=frames();if(!fs.length)return;fs.splice(active+1,0,{...fs[active]});active++;render();};
+  $('removeFrameBtn').onclick=()=>{const fs=frames();if(!fs.length)return;fs.splice(active,1);active=Math.max(0,Math.min(active,fs.length-1));render();};
+  $('moveFrameLeftBtn').onclick=()=>{const fs=frames();if(active<=0)return;[fs[active-1],fs[active]]=[fs[active],fs[active-1]];active--;render();};
+  $('moveFrameRightBtn').onclick=()=>{const fs=frames();if(active>=fs.length-1)return;[fs[active+1],fs[active]]=[fs[active],fs[active+1]];active++;render();};
+  document.querySelectorAll('#animationTabs [data-animation]').forEach(b=>b.onclick=()=>selectAnim(b.dataset.animation,b));
+  function selectAnim(name,button){activeAnim=name;active=0;document.querySelectorAll('#animationTabs [data-animation]').forEach(x=>x.classList.toggle('active',x===button));render();}
+  $('newAnimationBtn').onclick=()=>{const name=prompt('Nome da animação:','NovaAnimação');if(!name||animations.has(name))return;animations.set(name,$('keepCharacterCheck').checked?frames().map(f=>({...f})):[]);const b=document.createElement('button');b.dataset.animation=name;b.textContent=name;b.onclick=()=>selectAnim(name,b);$('newAnimationBtn').before(b);selectAnim(name,b);};
+  const keepA=$('keepCharacterCheck'),keepB=$('keepCharacterSide');const sk=e=>{keepA.checked=e.target.checked;keepB.checked=e.target.checked};keepA.onchange=sk;keepB.onchange=sk;
+  let ratio=1;function sizeFrom(source){const w=$('spriteWidth'),h=$('spriteHeight');if(source==='w'&&$('lockRatio').checked)h.value=Math.max(1,Math.round(+w.value/ratio));if(source==='h'&&$('lockRatio').checked)w.value=Math.max(1,Math.round(+h.value*ratio));slice();syncFields();}
+  $('spriteWidth').onchange=()=>sizeFrom('w');$('spriteHeight').onchange=()=>sizeFrom('h');$('spriteWidthSide').onchange=()=>{$('spriteWidth').value=$('spriteWidthSide').value;sizeFrom('w')};$('spriteHeightSide').onchange=()=>{$('spriteHeight').value=$('spriteHeightSide').value;sizeFrom('h')};
+  document.querySelectorAll('[data-size]').forEach(b=>b.onclick=()=>{$('spriteWidth').value=$('spriteHeight').value=b.dataset.size;ratio=1;slice();syncFields()});
+  $('spriteFpsSide').oninput=()=>{$('spriteFps').value=$('spriteFpsSide').value;duration()};$('spriteLoopSide').onchange=()=>{$('spriteLoop').checked=$('spriteLoopSide').checked};
+  $('animationName').onchange=()=>{const n=$('animationName').value.trim();if(!n||n===activeAnim||animations.has(n))return;$('animationTabs').querySelector(\`[data-animation="\${activeAnim}"]\`).textContent=n;animations.set(n,animations.get(activeAnim));animations.delete(activeAnim);activeAnim=n;};
+  $('spriteZoomIn').onclick=()=>{zoom=Math.min(8,zoom*1.25);$('spriteZoomLabel').textContent=Math.round(zoom*100)+'%';drawSheet()};$('spriteZoomOut').onclick=()=>{zoom=Math.max(.25,zoom/1.25);$('spriteZoomLabel').textContent=Math.round(zoom*100)+'%';drawSheet()};
   render();
-  const fps=$('spriteFps'); const duration=$('spriteDuration');
-  const updateDuration=()=>{const v=Math.max(1,Number(fps.value)||12);duration.textContent=`Duração ${(1/v).toFixed(3)}s`;if(playing){clearInterval(timer);timer=setInterval(step,1000/v);}};
-  const step=()=>{active=(active+1)%frames.length;render();};
-  fps.oninput=updateDuration; updateDuration();
-  $('spritePlayBtn').onclick=()=>{if(playing)return;playing=true;timer=setInterval(step,1000/Math.max(1,Number(fps.value)||12));};
-  $('spritePauseBtn').onclick=()=>{playing=false;clearInterval(timer);};
-  $('spriteStopBtn').onclick=()=>{playing=false;clearInterval(timer);active=0;render();};
-  $('addFrameBtn').onclick=()=>{frames.push(frames.length+1);active=frames.length-1;render();};
-  $('duplicateFrameBtn').onclick=()=>{frames.splice(active+1,0,frames[active]);active++;render();};
-  const keepA=$('keepCharacterCheck'),keepB=$('keepCharacterSide');const syncKeep=e=>{keepA.checked=e.target.checked;keepB.checked=e.target.checked;};keepA.onchange=syncKeep;keepB.onchange=syncKeep;
-  const w=$('spriteWidth'),h=$('spriteHeight'),lock=$('lockRatio');let ratio=(Number(w.value)||64)/(Number(h.value)||64);
-  w.onchange=()=>{if(lock.checked)h.value=Math.max(1,Math.round(Number(w.value)/ratio));applySpriteSize();};
-  h.onchange=()=>{if(lock.checked)w.value=Math.max(1,Math.round(Number(h.value)*ratio));applySpriteSize();};
-  $('spriteScaleX').onchange=applySpriteSize;$('spriteScaleY').onchange=applySpriteSize;
-  document.querySelectorAll('[data-size]').forEach(b=>b.onclick=()=>{w.value=b.dataset.size;h.value=b.dataset.size;ratio=1;applySpriteSize();});
-  function applySpriteSize(){const preview=document.querySelector('.sprite-preview');if(!preview)return;const sx=Number($('spriteScaleX').value)||1,sy=Number($('spriteScaleY').value)||1;preview.style.width=Math.max(16,Number(w.value))*2.75+'px';preview.style.height=Math.max(16,Number(h.value))*3.25+'px';preview.style.transform=`scale(${sx},${sy})`;}
-  $('newAnimationBtn').onclick=()=>{const name=prompt('Nome da animação:','Nova animação');if(!name)return;const btn=document.createElement('button');btn.textContent=name;btn.onclick=()=>{document.querySelectorAll('.animation-tabs button').forEach(x=>x.classList.remove('active'));btn.classList.add('active');};$('newAnimationBtn').before(btn);if(!keepA.checked){frames.splice(0,frames.length,1);active=0;render();}};
 }
 initSpriteWorkspace();
 
