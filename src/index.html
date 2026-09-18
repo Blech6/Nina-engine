@@ -41,9 +41,9 @@
     <div class="brand"><div class="brand-mark">忍</div><strong>Ninja Engine</strong><span>v0.12</span></div>
     <nav class="menus"><button>Cena</button><button>Projeto</button><button>Depuração</button><button>Editor</button><button>Ajuda</button></nav>
     <div class="title-actions">
-      <button id="openBtn" title="Abrir projeto ZIP">Open ZIP</button>
-      <button id="saveBtn" title="Salvar cena">Save</button>
-      <button id="exportBtn" title="Exportar projeto">Export</button>
+      <button id="openBtn" title="Abrir projeto ZIP">▣</button>
+      <button id="saveBtn" title="Salvar cena">▾</button>
+      <button id="exportBtn" title="Exportar projeto">⇧</button>
       <button id="connectionsBtn" title="Conexões">⌁</button>
       <button id="mobileMenuBtn" class="mobile-only" title="Cena e arquivos">☰</button>
       <button id="mobileInspectorBtn" class="mobile-only" title="Inspector">⚙</button>
@@ -52,7 +52,7 @@
   </header>
 
   <div class="editorbar">
-    <div class="scene-chip"><span class="node-gem">◆</span><span id="projectStatus">No Project</span></div>
+    <div class="scene-chip"><span class="node-gem">◆</span><span id="projectStatus">Sem Projeto</span></div>
     <div class="workspace-modes">
       <button class="mode active" data-mode="2d">⚑ <span>2D</span></button>
       <button class="mode planned" disabled title="Planejado">⬡ <span>3D</span></button>
@@ -89,14 +89,14 @@
       <section class="dock filesystem-dock">
         <div class="dock-title"><span>Arquivos</span><b id="assetCount">0</b><button class="dock-more">⋮</button></div>
         <div class="path-row"><button title="Voltar">‹</button><button title="Avançar">›</button><span>res://</span></div>
-        <div class="filter-row compact"><span>⌕</span><input id="searchAssets" placeholder="Filter Files"></div>
-        <div id="assetList" class="asset-list"><div class="muted">Open a project to see assets.</div></div>
+        <div class="filter-row compact"><span>⌕</span><input id="searchAssets" placeholder="Filtrar Arquivos"></div>
+        <div id="assetList" class="asset-list"><div class="muted">Abra um projeto para visualizar os recursos.</div></div>
       </section>
     </aside>
 
     <main class="center">
       <div class="scene-tabs">
-        <button class="scene-tab active"><span>◇</span><span id="sceneName">Untitled Scene</span><i>×</i></button>
+        <button class="scene-tab active"><span>◇</span><span id="sceneName">Cena sem título</span><i>×</i></button>
         <button class="add-tab" title="Nova cena">＋</button>
       </div>
       <div class="viewport-ruler ruler-x"></div><div class="viewport-tools">
@@ -191,8 +191,8 @@
     <aside class="right-panel">
       <div class="dock-tabs inspector-tabs"><button class="active">Inspetor</button><button>Sinais</button><button>Grupos</button><button class="dock-more">⋮</button></div><div class="inspector-actions"><button>▧＋</button><button>▱</button><button>▣</button><span></span><button>‹</button><button>›</button></div>
       <div class="filter-row inspector-search"><span>⌕</span><input placeholder="Filtrar Propriedades"></div>
-      <div class="object-header"><span class="object-icon">◇</span><div><strong id="selectedType">—</strong><small>Selected node</small></div></div>
-      <div id="inspector" class="inspector"><div class="empty-state"><div class="empty-icon">◇</div><strong>Select a node</strong><span>Properties will appear here.</span></div></div>
+      <div class="object-header"><span class="object-icon">◇</span><div><strong id="selectedType">—</strong><small>Nó selecionado</small></div></div>
+      <div id="inspector" class="inspector"><div class="empty-state"><div class="empty-icon">◇</div><strong>Selecione um nó</strong><span>As propriedades aparecerão aqui.</span></div></div>
       <section class="project-dock"><div class="dock-title">Project</div><div id="projectInfo" class="project-info"><span class="muted">No project loaded.</span></div></section>
     </aside>
   </div>
