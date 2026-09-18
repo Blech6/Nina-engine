@@ -142,3 +142,35 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:1px solid 
 button:disabled{filter:saturate(.5);opacity:.38}
 .planned{opacity:.32}
 @media(max-width:1100px){.workspace{grid-template-columns:215px minmax(360px,1fr) 245px}}
+
+
+/* Godot reference reconstruction pass */
+:root{--godot-top:#121212;--godot-dock:#252525;--godot-center:#202020;--godot-canvas:#505050;--godot-line:#171717;--godot-control:#333;--godot-control-hover:#444;--godot-accent:#58a6e7}
+.titlebar{height:35px;background:var(--godot-top);border:0;box-shadow:none}
+.brand{display:none}.menus{margin-left:4px}.menus button{height:31px;padding:0 10px;color:#c8c8c8;font-size:12px;border-radius:3px}
+.title-actions{display:none}
+.editorbar{height:45px;background:var(--godot-top);grid-template-columns:240px 1fr 240px;border-bottom:1px solid #0c0c0c;box-shadow:none}
+.scene-chip{font-size:11px;color:#b8b8b8}.workspace-modes{height:45px;gap:4px}.mode{height:34px;min-width:auto;padding:0 10px;font-size:13px;font-weight:600;color:#bdbdbd}
+.mode.active{background:transparent;color:#65b8f4;box-shadow:none}.mode:not(:disabled):hover{background:#292929}
+.run-actions button{color:#aaa}.run-actions .run{color:#bbb}.run-actions .stop{color:#999}
+.workspace{grid-template-columns:240px minmax(450px,1fr) 240px;background:#181818}
+.left-panel,.right-panel{background:#252525;border-color:#111}
+.dock-tabs{height:34px;background:#252525;border-bottom:1px solid #151515;align-items:center}.dock-tabs button,.tab{height:34px;color:#aaa;font-size:12px}
+.dock-tabs button.active,.tab.active{background:#303030;color:#ddd;box-shadow:inset 0 -2px #58a6e7}.dock-more{margin-left:auto!important;padding:0 8px!important}
+.scene-toolbar{height:36px;background:#252525;border-bottom:0}.scene-toolbar button{font-size:17px;color:#bbb}
+.filter-row{background:#171717;border:0;border-radius:4px;height:29px}.tree-row{height:31px}.tree-row.selected{background:#464646;box-shadow:none}
+.filesystem-dock{border-top:2px solid #151515}.dock-title{height:33px;background:#252525}.dock-title .dock-more{float:right}
+.path-row{background:#252525;border:0}.file-row,.asset{min-height:28px}
+.center{background:#202020}.scene-tabs{height:34px;background:#202020;border:0}.scene-tab{height:31px;background:#2c2c2c!important;border:0!important;border-radius:4px 4px 0 0!important}
+.viewport-tools{height:38px;background:#252525;border-bottom:1px solid #111;padding-left:6px}.tool{color:#aaa}.tool:hover{background:#3a3a3a}.tool.active{background:#3d5365;color:#8cc8f0;box-shadow:none}
+.viewport-ruler{position:absolute;z-index:5;pointer-events:none;color:#aaa;font:9px Consolas,monospace}
+.ruler-x{display:none}.viewport-wrap{background:#505050;background-image:none;margin:0;position:relative}
+.ruler-y{left:0;top:0;bottom:0;width:14px;border-right:1px solid #383838;background:repeating-linear-gradient(to bottom,transparent 0,transparent 9px,#777 10px,transparent 11px)}
+#view{width:calc(100% - 28px);height:calc(100% - 28px);min-height:0;margin:14px;background:#505050;border:1px solid #6b6b6b;box-shadow:none}
+.axis-label.x{top:80px;color:#d06b99}.axis-label.y{left:5px;color:#75b96f}
+.bottom-panel{height:38px;background:#202020;border-top:1px solid #111;overflow:hidden}.bottom-tabs{height:38px;background:#202020;border:0}.bottom-tab,.bottom-tabs>button{height:38px;color:#bcbcbc;font-size:12px}.bottom-tab.active{background:#292929;box-shadow:none;color:#ddd}.console{display:none!important}
+.right-panel{background:#252525}.inspector-tabs{background:#252525}.inspector-actions{height:35px;display:flex;align-items:center;gap:3px;padding:3px 7px;border-bottom:1px solid #171717}.inspector-actions button{height:27px;min-width:27px;color:#aaa;border-radius:3px}.inspector-actions button:hover{background:#3b3b3b}.inspector-actions span{flex:1}
+.inspector-search{background:#191919}.object-header{background:#2b2b2b;border-color:#181818}.property-header{background:#202020}.property input,.property select{background:#303030;border:0}
+.project-dock{display:none}.statusbar{height:0;display:none}
+.project-manager{background:#202531}
+@media(min-width:1200px){.workspace{grid-template-columns:240px minmax(600px,1fr) 240px}}
