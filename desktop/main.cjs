@@ -1,5 +1,6 @@
 const { app, BrowserWindow, ipcMain, Menu } = require('electron');
 const path = require('path');
+const fs = require('fs/promises');
 
 function env(name){ return process.env[name] || ''; }
 async function jsonFetch(url, options={}){
@@ -33,6 +34,12 @@ ipcMain.handle('ninja:test-connection', async (_e, service)=>{
     }
     return {ok:false,message:'Unknown service'};
   }catch(e){ return {ok:false,message:e.message}; }
+});
+
+ipcMain.handle('ninja:read-project-file', async (_e, filePath)=>{
+  if(!filePath || typeof filePath!=='string') throw new Error('Invalid project path');
+  const data=await fs.readFile(filePath);
+  return {name:path.basename(filePath),data};
 });
 
 ipcMain.handle('ninja:ai', async (_e, payload)=>{
