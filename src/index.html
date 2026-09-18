@@ -96,14 +96,14 @@
         <div class="dock-title"><span>Arquivos</span><b id="assetCount">0</b><button class="dock-more">⋮</button></div>
         <div class="path-row"><button title="Voltar">‹</button><button title="Avançar">›</button><span>res://</span></div>
         <div class="filter-row compact"><span>⌕</span><input id="searchAssets" placeholder="Filtrar Arquivos"></div>
-        <div id="assetList" class="asset-list"><div class="muted">Abra um projeto para visualizar os recursos.</div></div>
+        <div id="assetList" class="asset-list"><div class="muted">Abra um projeto para visualizar os recursos.</div></div><div id="fileContextMenu" class="file-context-menu" hidden><button data-file-action="open">Abrir</button><button data-file-action="copy">Copiar caminho</button><button data-file-action="rename">Renomear</button><hr><button data-file-action="delete">Remover</button></div>
       </section>
     </aside>
 
     <main class="center">
       <div class="scene-tabs">
-        <button class="scene-tab active"><span>◇</span><span id="sceneName">Cena sem título</span><i>×</i></button>
-        <button class="add-tab" title="Nova cena">＋</button>
+        <div id="sceneTabList" class="scene-tab-list"><button class="scene-tab active" data-scene-tab="current"><span>◇</span><span id="sceneName">Cena sem título</span><i>×</i></button></div>
+        <button id="addSceneTabBtn" class="add-tab" title="Nova cena">＋</button>
       </div>
       <div class="viewport-ruler ruler-x"></div><div class="viewport-tools">
         <div>
