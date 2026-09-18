@@ -27,6 +27,32 @@ function node(type,name,x=550,y=340,w=64,h=48,parent=''){return {id:crypto.rando
 function rootForScene(s){return s.root||{id:'root',name:s.name||'Main',type:'Node2D',parent:null,x:0,y:0,w:0,h:0,rotation:0,visible:true,properties:{},metadata:{}};}
 function setScene(s){state.scene=s;state.scene.root=rootForScene(s);state.selected=null;state.undo=[];state.redo=[];renderAll();}
 
+let pmSelected=-1;
+function recentProjects(){try{return JSON.parse(localStorage.getItem('ninjaRecentProjects')||'[]');}catch{return [];}}
+function saveRecentProjects(items){localStorage.setItem('ninjaRecentProjects',JSON.stringify(items.slice(0,30)));}
+function rememberProject(name){
+  const items=recentProjects().filter(x=>x.name!==name);
+  items.unshift({name,path:'Imported ZIP project',updated:new Date().toLocaleString('pt-BR')});
+  saveRecentProjects(items);pmSelected=0;renderProjectManager();
+}
+function renderProjectManager(){
+  const q=($('pmSearch')?.value||'').toLowerCase();
+  let items=recentProjects().map((x,index)=>({...x,index})).filter(x=>x.name.toLowerCase().includes(q));
+  if($('pmSort')?.value==='Nome')items.sort((a,b)=>a.name.localeCompare(b.name));
+  $('pmProjectList').innerHTML=items.length?items.map(x=>`<div class="pm-project ${x.index===pmSelected?'selected':''}" data-index="${x.index}"><div class="pm-project-icon">忍</div><div><strong>${escapeHtml(x.name)}</strong><small>▱ ${escapeHtml(x.path)}</small></div><time>${escapeHtml(x.updated||'')}</time></div>`).join(''):'<div class="pm-empty">Nenhum projeto encontrado. Crie ou importe um projeto para começar.</div>';
+  document.querySelectorAll('.pm-project').forEach(el=>el.onclick=()=>{pmSelected=Number(el.dataset.index);renderProjectManager();});
+  for(const id of ['pmEditBtn','pmRunBtn','pmRenameBtn','pmDuplicateBtn','pmRemoveBtn'])$(id).disabled=pmSelected<0||!recentProjects()[pmSelected];
+}
+function openEditor(){$('projectManager').hidden=true;}
+$('pmCreateBtn').onclick=()=>{const name=prompt('Project name:','New RPG Project');if(!name)return;state.project={name};$('projectStatus').textContent=name;newScene();rememberProject(name);openEditor();};
+$('pmImportBtn').onclick=$('pmScanBtn').onclick=()=>$('zipInput').click();
+$('pmEditBtn').onclick=()=>$('zipInput').click();
+$('pmRunBtn').onclick=()=>{$('zipInput').click();};
+$('pmRenameBtn').onclick=()=>{const items=recentProjects(),item=items[pmSelected];if(!item)return;const name=prompt('New project name:',item.name);if(name){item.name=name;saveRecentProjects(items);renderProjectManager();}};
+$('pmDuplicateBtn').onclick=()=>{const items=recentProjects(),item=items[pmSelected];if(!item)return;items.splice(pmSelected+1,0,{...item,name:item.name+' Copy',updated:new Date().toLocaleString('pt-BR')});saveRecentProjects(items);pmSelected++;renderProjectManager();};
+$('pmRemoveBtn').onclick=()=>{const items=recentProjects();if(!items[pmSelected])return;items.splice(pmSelected,1);saveRecentProjects(items);pmSelected=-1;renderProjectManager();};
+$('pmSearch').oninput=renderProjectManager;$('pmSort').onchange=renderProjectManager;
+
 async function refreshConnections(){
   if(!window.ninjaBridge){$('connectionSummary').textContent='Connections: Web mode';return;}
   const c=await window.ninjaBridge.connections();
@@ -82,7 +108,7 @@ function findNodeAt(x,y){for(let i=state.scene.nodes.length-1;i>=0;i--){const n=
 
 async function openZip(file){
   state.zip=file;state.entries.clear();state.cache.clear();state.cacheBytes=0;state.errors=[];state.undo=[];state.redo=[];$('statusText').textContent='Reading archive…';$('projectStatus').textContent='Importing…';log(`Opening ${file.name}`);
-  try{const reader=new ZipReader(new BlobReader(file));for(const e of await reader.getEntries())state.entries.set(e.filename,e);await reader.close();state.files=[...state.entries.keys()].sort((a,b)=>a.localeCompare(b));state.root=detectRoot();const pp=state.root+'project.godot';state.project=state.entries.has(pp)?parseGodot(await readText(pp)):{name:file.name.replace(/\.zip$/i,'')};state.projectModel.project=clone(state.project);$('projectStatus').textContent=state.project.name||file.name;$('memory').textContent=archiveSizeLabel(file.size);$('projectInfo').innerHTML=`<div><b>${escapeHtml(state.project.name||file.name)}</b></div><div>${state.entries.size.toLocaleString()} files</div><div>Godot features: ${escapeHtml(state.project.features||'unknown')}</div><div class="muted">Ninja intermediate model active</div>`;renderFiles();renderAssets();if(state.project.main_scene&&state.entries.has(resolvePath(state.project.main_scene)))await loadScene(resolvePath(state.project.main_scene));else refreshConnections();
+  try{const reader=new ZipReader(new BlobReader(file));for(const e of await reader.getEntries())state.entries.set(e.filename,e);await reader.close();state.files=[...state.entries.keys()].sort((a,b)=>a.localeCompare(b));state.root=detectRoot();const pp=state.root+'project.godot';state.project=state.entries.has(pp)?parseGodot(await readText(pp)):{name:file.name.replace(/\.zip$/i,'')};state.projectModel.project=clone(state.project);$('projectStatus').textContent=state.project.name||file.name;$('memory').textContent=archiveSizeLabel(file.size);$('projectInfo').innerHTML=`<div><b>${escapeHtml(state.project.name||file.name)}</b></div><div>${state.entries.size.toLocaleString()} files</div><div>Godot features: ${escapeHtml(state.project.features||'unknown')}</div><div class="muted">Ninja intermediate model active</div>`;rememberProject(state.project.name||file.name);openEditor();renderFiles();renderAssets();if(state.project.main_scene&&state.entries.has(resolvePath(state.project.main_scene)))await loadScene(resolvePath(state.project.main_scene));else refreshConnections();
 setScene({path:'',name:'Main',root:node('Node2D','Main',0,0,0,0,''),nodes:[]});$('statusText').textContent='Project imported';log(`Indexed ${state.entries.size.toLocaleString()} archive entries.`);await buildCompatibilityReport();}
   catch(err){$('statusText').textContent='Import failed';log(err.message,'error');console.error(err);}
 }
@@ -153,3 +179,4 @@ function download(blob,name){const a=document.createElement('a');a.href=URL.crea
 function tick(now){const dt=Math.min(.05,(now-state.last)/1000);state.last=now;state.frame++;state.runtime.animationTime=(state.runtime.animationTime||0)+dt;updateRuntime(dt);if(state.frame%12===0){state.fps=Math.round(1/dt);$('fps').textContent=state.fps;const mem=performance.memory?.usedJSHeapSize;if(mem)$('memory').textContent=archiveSizeLabel(mem);if($('debugger'))$('debugger').innerHTML=state.playing?`<div><i>●</i> Runtime: running</div><div>Entities: ${state.runtime.entities.size}</div><div>Areas: ${state.runtime.areas.size}</div><div>Events: ${state.runtime.events.slice(0,8).map(escapeHtml).join('<br>')||'No area events.'}</div>`:'<div><i>●</i> Runtime stopped.</div>';}draw();requestAnimationFrame(tick);}
 refreshConnections();
 setScene({path:'',name:'Main',root:node('Node2D','Main',0,0,0,0,''),nodes:[]});state.scene.root.id='root';renderAll();draw();requestAnimationFrame(tick);
+renderProjectManager();

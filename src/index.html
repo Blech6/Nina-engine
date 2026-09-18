@@ -10,6 +10,33 @@
 </head>
 <body>
 <div class="app">
+  <section id="projectManager" class="project-manager">
+    <header class="pm-header">
+      <div class="pm-logo"><div class="brand-mark">忍</div><strong>NINJA</strong></div>
+      <nav><button class="active">▦ Projetos</button><button disabled>⇩ Biblioteca de Recursos</button></nav>
+      <button class="pm-settings">⚒ Configurações</button>
+    </header>
+    <div class="pm-toolbar">
+      <button id="pmCreateBtn" class="pm-primary">＋ Criar</button>
+      <button id="pmImportBtn">▣ Importar</button>
+      <button id="pmScanBtn">⌕ Escanear</button>
+      <label class="pm-search">⌕ <input id="pmSearch" placeholder="Filtrar Projetos"></label>
+      <label>Ordenar: <select id="pmSort"><option>Última Modificação</option><option>Nome</option></select></label>
+    </div>
+    <div class="pm-content">
+      <div id="pmProjectList" class="pm-project-list"></div>
+      <aside class="pm-actions">
+        <button id="pmEditBtn" disabled>✎ Editar</button>
+        <button id="pmRunBtn" disabled>▶ Executar</button>
+        <button id="pmRenameBtn" disabled>Ⅰ Renomear</button>
+        <button id="pmDuplicateBtn" disabled>▣ Duplicar</button>
+        <button id="pmRemoveBtn" disabled>▱ Remover</button>
+        <span></span>
+        <button class="pm-donate">♥ Doar</button>
+      </aside>
+    </div>
+    <footer class="pm-footer"><span>Modo offline</span><b>Ninja Engine v0.12</b></footer>
+  </section>
   <header class="titlebar">
     <div class="brand"><div class="brand-mark">忍</div><strong>Ninja Engine</strong><span>v0.12</span></div>
     <nav class="menus"><button>Scene</button><button>Project</button><button>Debug</button><button>Editor</button><button>Help</button></nav>
