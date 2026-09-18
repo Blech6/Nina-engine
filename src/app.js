@@ -30,42 +30,51 @@ function setScene(s){state.scene=s;state.scene.root=rootForScene(s);state.select
 let pmSelected=-1;
 function recentProjects(){try{return JSON.parse(localStorage.getItem('ninjaRecentProjects')||'[]');}catch{return [];}}
 function saveRecentProjects(items){localStorage.setItem('ninjaRecentProjects',JSON.stringify(items.slice(0,30)));}
-function rememberProject(name,filePath='',snapshot=null){
-  const items=recentProjects().filter(x=>x.name!==name);
-  items.unshift({name,path:filePath||'Projeto Ninja',filePath:filePath||'',snapshot:snapshot||null,updated:new Date().toLocaleString('pt-BR')});
-  saveRecentProjects(items);pmSelected=0;renderProjectManager();
+function rememberProject(name,filePath){
+  if(!filePath)return;
+  const items=recentProjects().filter(x=>x.filePath!==filePath);
+  items.unshift({name,path:filePath,filePath,updated:new Date().toLocaleString('pt-BR')});
+  saveRecentProjects(items);pmSelected=0;localStorage.setItem('ninjaLastProjectPath',filePath);renderProjectManager();
 }
 function renderProjectManager(){
   const q=($('pmSearch')?.value||'').toLowerCase();
-  let items=recentProjects().map((x,index)=>({...x,index})).filter(x=>x.name.toLowerCase().includes(q));
+  let items=recentProjects().map((x,index)=>({...x,index})).filter(x=>(x.name+' '+x.filePath).toLowerCase().includes(q));
   if($('pmSort')?.value==='Nome')items.sort((a,b)=>a.name.localeCompare(b.name));
-  $('pmProjectList').innerHTML=items.length?items.map(x=>`<div class="pm-project ${x.index===pmSelected?'selected':''}" data-index="${x.index}"><div class="pm-project-icon">忍</div><div><strong>${escapeHtml(x.name)}</strong><small>▱ ${escapeHtml(x.path)}</small></div><time>${escapeHtml(x.updated||'')}</time></div>`).join(''):'<div class="pm-empty">Nenhum projeto encontrado. Crie ou importe um projeto para começar.</div>';
+  $('pmProjectList').innerHTML=items.length?items.map(x=>`<div class="pm-project ${x.index===pmSelected?'selected':''}" data-index="${x.index}"><div class="pm-project-icon">忍</div><div><strong>${escapeHtml(x.name)}</strong><small>▱ ${escapeHtml(x.filePath)}</small></div><time>${escapeHtml(x.updated||'')}</time></div>`).join(''):'<div class="pm-empty">Nenhum projeto. Use Criar para fazer um novo ou Importar para abrir uma pasta existente.</div>';
   document.querySelectorAll('.pm-project').forEach(el=>{el.onclick=()=>{pmSelected=Number(el.dataset.index);renderProjectManager();};el.ondblclick=()=>reopenRememberedProject(Number(el.dataset.index),false);});
   for(const id of ['pmEditBtn','pmRunBtn','pmRenameBtn','pmDuplicateBtn','pmRemoveBtn'])$(id).disabled=pmSelected<0||!recentProjects()[pmSelected];
 }
-function openEditor(){$('projectManager').hidden=true;localStorage.setItem('ninjaLastProject',state.project?.name||'');}
+function openEditor(){$('projectManager').hidden=true;localStorage.setItem('ninjaLastProjectPath',state.project?.filePath||'');}
 function showProjectManager(){$('projectManager').hidden=false;renderProjectManager();}
-async function reopenRememberedProject(index,run=false){const item=recentProjects()[index];if(!item)return;if(item.filePath&&window.ninjaBridge?.pickProjectFolder&&item.snapshot?.project?.native){state.project={...item.snapshot.project,filePath:item.filePath,native:true};setScene(item.snapshot.scene);$('projectStatus').textContent=item.name;openEditor();if(run)$('playBtn').click();return;}if(item.filePath&&window.ninjaBridge?.readProjectFile){try{$('statusText').textContent='Abrindo projeto…';const saved=await window.ninjaBridge.readProjectFile(item.filePath);const bytes=saved.data instanceof Uint8Array?saved.data:new Uint8Array(saved.data);const file=new File([bytes],saved.name||item.name+'.zip',{type:'application/zip'});await openZip(file,item.filePath);if(run)$('playBtn').click();return;}catch(err){log('Não foi possível reabrir o projeto salvo: '+err.message,'error');}}if(item.snapshot){state.project=item.snapshot.project||{name:item.name};setScene(item.snapshot.scene);$('projectStatus').textContent=item.name;openEditor();if(run)$('playBtn').click();return;}alert('O arquivo original deste projeto não está mais disponível. Importe-o novamente para atualizar o caminho.');}
+function applyNativeProject(p){
+  state.zip=null;state.entries.clear();state.cache.clear();state.files=(p.files||[]).filter(x=>x.type==='file').map(x=>x.path);
+  state.project={name:p.name,filePath:p.filePath,native:true};state.projectModel.project=clone(state.project);
+  const scene=p.scene||{path:'scenes/Main.json',name:'Main',root:node('Node2D','Main',0,0,0,0,''),nodes:[]};scene.root=rootForScene(scene);scene.root.id='root';
+  setScene(scene);$('projectStatus').textContent=p.name;rememberProject(p.name,p.filePath);openEditor();renderFiles();renderAssets();renderAll();$('statusText').textContent='Projeto aberto';
+}
+async function reopenRememberedProject(index,run=false){
+  const item=recentProjects()[index];if(!item?.filePath)return;
+  try{$('statusText').textContent='Abrindo projeto…';const p=await window.ninjaBridge.openProjectPath(item.filePath);applyNativeProject(p);if(run)$('playBtn').click();}
+  catch(err){alert('Não foi possível abrir este projeto.\n\n'+err.message+'\n\nSe a pasta foi movida, remova esta entrada e importe a nova localização.');}
+}
 async function createProject(){
- const name=prompt('Nome do projeto:','Novo Projeto');if(!name?.trim())return;
- const scene={path:'scenes/Main.json',name:'Main',root:node('Node2D','Main',0,0,0,0,''),nodes:[]};scene.root.id='root';
- if(window.ninjaBridge?.createProjectFolder){try{const made=await window.ninjaBridge.createProjectFolder({name:name.trim(),scene});if(!made)return;state.project={name:made.name,filePath:made.filePath,native:true};setScene(scene);$('projectStatus').textContent=made.name;rememberProject(made.name,made.filePath,{project:clone(state.project),scene:clone(scene)});openEditor();renderAll();log('Projeto criado em '+made.filePath);return;}catch(err){alert('Falha ao criar projeto: '+err.message);return;}}
- state.project={name:name.trim()};setScene(scene);rememberProject(state.project.name,'',{project:clone(state.project),scene:clone(scene)});openEditor();renderAll();
+  const name=prompt('Nome do projeto:','Novo Projeto');if(!name?.trim())return;
+  if(!window.ninjaBridge?.createProjectFolder){alert('Criar projetos em pasta requer a versão desktop da Ninja Engine.');return;}
+  const scene={path:'scenes/Main.json',name:'Main',root:node('Node2D','Main',0,0,0,0,''),nodes:[]};scene.root.id='root';
+  try{const made=await window.ninjaBridge.createProjectFolder({name:name.trim(),scene});if(made)applyNativeProject(made);}
+  catch(err){alert('Não foi possível criar o projeto.\n\n'+err.message);}
 }
 async function importProject(){
- if(window.ninjaBridge?.pickProjectFolder){try{const picked=await window.ninjaBridge.pickProjectFolder();if(!picked)return;if(picked.kind==='ninja'){state.project={name:picked.name,filePath:picked.filePath,native:true};const scene=picked.scene||{path:'scenes/Main.json',name:'Main',root:node('Node2D','Main',0,0,0,0,''),nodes:[]};setScene(scene);$('projectStatus').textContent=picked.name;rememberProject(picked.name,picked.filePath,{project:clone(state.project),scene:clone(scene)});openEditor();renderAll();log('Projeto aberto: '+picked.filePath);return;}alert('Projeto Godot em pasta detectado. Use Importar ZIP por enquanto para conversão completa.');return;}catch(err){alert('Não foi possível abrir a pasta: '+err.message);return;}}
- $('zipInput').value='';$('zipInput').click();
+  if(!window.ninjaBridge?.pickProjectFolder){alert('Abrir pastas de projeto requer a versão desktop da Ninja Engine.');return;}
+  try{const picked=await window.ninjaBridge.pickProjectFolder();if(picked)applyNativeProject(picked);}
+  catch(err){alert('Não foi possível importar o projeto.\n\n'+err.message);}
 }
-$('pmCreateBtn').onclick=createProject;
-$('pmImportBtn').onclick=importProject;
-$('pmScanBtn').onclick=importProject;
-$('pmEditBtn').onclick=()=>reopenRememberedProject(pmSelected,false);
-$('pmRunBtn').onclick=()=>reopenRememberedProject(pmSelected,true);
-$('pmRenameBtn').onclick=()=>{const items=recentProjects(),item=items[pmSelected];if(!item)return;const name=prompt('New project name:',item.name);if(name){item.name=name;saveRecentProjects(items);renderProjectManager();}};
-$('pmDuplicateBtn').onclick=()=>{const items=recentProjects(),item=items[pmSelected];if(!item)return;items.splice(pmSelected+1,0,{...item,name:item.name+' Copy',updated:new Date().toLocaleString('pt-BR')});saveRecentProjects(items);pmSelected++;renderProjectManager();};
+$('pmCreateBtn').onclick=createProject;$('pmImportBtn').onclick=importProject;$('pmScanBtn').onclick=importProject;
+$('pmEditBtn').onclick=()=>reopenRememberedProject(pmSelected,false);$('pmRunBtn').onclick=()=>reopenRememberedProject(pmSelected,true);
+$('pmRenameBtn').onclick=()=>{const items=recentProjects(),item=items[pmSelected];if(!item)return;const name=prompt('Nome exibido:',item.name);if(name?.trim()){item.name=name.trim();saveRecentProjects(items);renderProjectManager();}};
+$('pmDuplicateBtn').onclick=()=>alert('Duplicação física de projetos será adicionada depois. O projeto original não foi alterado.');
 $('pmRemoveBtn').onclick=()=>{const items=recentProjects();if(!items[pmSelected])return;items.splice(pmSelected,1);saveRecentProjects(items);pmSelected=-1;renderProjectManager();};
 $('pmSearch').oninput=renderProjectManager;$('pmSort').onchange=renderProjectManager;
-
 async function refreshConnections(){
   if(!window.ninjaBridge){$('connectionSummary').textContent='Connections: Web mode';return;}
   const c=await window.ninjaBridge.connections();
@@ -82,7 +91,6 @@ $('mobileMenuBtn').onclick=()=>{document.querySelector('.left-panel').classList.
 $('mobileInspectorBtn').onclick=()=>{document.querySelector('.right-panel').classList.toggle('mobile-open');document.querySelector('.left-panel').classList.remove('mobile-open');};
 $('aiConnectBtn').onclick=()=>testConnection('ai','aiStatus');$('notionConnectBtn').onclick=()=>testConnection('notion','notionStatus');$('githubConnectBtn').onclick=()=>testConnection('github','githubStatus');
 $('openBtn').onclick=importProject;
-$('zipInput').onchange=e=>{const file=e.target.files?.[0];if(file)openZip(file,window.ninjaBridge?.filePath?window.ninjaBridge.filePath(file):'');e.target.value='';};
 $('playBtn').onclick=()=>{resetRuntime();state.playing=true;state.mode='game';syncModes();log('Runtime started.');};
 $('stopBtn').onclick=()=>{state.playing=false;state.mode='2d';syncModes();log('Play mode stopped.');};
 $('gridBtn').onclick=()=>{state.grid=!state.grid;$('gridBtn').classList.toggle('active',state.grid);draw();};let snapEnabled=true,gridStep=16;$('snapBtn').onclick=()=>{snapEnabled=!snapEnabled;$('snapBtn').classList.toggle('active',snapEnabled);if($('snapGridCheck'))$('snapGridCheck').checked=snapEnabled;};
@@ -341,7 +349,7 @@ function buildResourceModel(){
     if(['.tres','.res','.png','.jpg','.jpeg','.webp','.svg','.ogg','.wav','.mp3','.ttf','.woff','.woff2'].includes(e))state.projectModel.resources.push({path:p,type:e.slice(1),status:e==='.tres'||e==='.res'?'partial':'external'});}
 }
 function ninjaProjectText(){state.projectModel.project=clone(state.project);state.projectModel.scenes=state.projectModel.scenes.filter(s=>s.path!==state.scene.path);state.projectModel.scenes.push(clone(state.scene));buildResourceModel();return JSON.stringify(state.projectModel,null,2);}
-async function saveNinjaProject(){if(state.project?.native&&state.project.filePath&&window.ninjaBridge?.saveProjectFolder){try{await window.ninjaBridge.saveProjectFolder({filePath:state.project.filePath,name:state.project.name,scene:clone(state.scene)});rememberProject(state.project.name,state.project.filePath,{project:clone(state.project),scene:clone(state.scene)});state.dirty=false;$('dirtyState').textContent='';log('Projeto salvo na pasta: '+state.project.filePath);return;}catch(e){log('Falha ao salvar: '+e.message,'error');}}const blob=new Blob([ninjaProjectText()],{type:'application/json'});download(blob,'project.ninja.json');state.dirty=false;$('dirtyState').textContent='';log('Ninja project model saved.');}
+async function saveNinjaProject(){if(state.project?.native&&state.project.filePath&&window.ninjaBridge?.saveProjectFolder){try{const saved=await window.ninjaBridge.saveProjectFolder({filePath:state.project.filePath,name:state.project.name,scene:clone(state.scene)});state.files=(saved.files||[]).filter(x=>x.type==='file').map(x=>x.path);rememberProject(state.project.name,state.project.filePath);renderFiles();renderAssets();state.dirty=false;$('dirtyState').textContent='';log('Projeto salvo na pasta: '+state.project.filePath);return;}catch(e){log('Falha ao salvar: '+e.message,'error');}}const blob=new Blob([ninjaProjectText()],{type:'application/json'});download(blob,'project.ninja.json');state.dirty=false;$('dirtyState').textContent='';log('Ninja project model saved.');}
 async function exportProject(){try{const writer=new ZipWriter(new BlobWriter('application/zip'));const project=`; Generated by Ninja Engine\nconfig_version=5\n\n[application]\nconfig/name=${godotQuote(state.project.name||'Ninja Project')}\n\n[run]\nmain_scene=${godotQuote('res://'+(state.scene.name||'Main')+'.tscn')}\n\n[display]\nwindow/size/viewport_width=1100\nwindow/size/viewport_height=680\n`;await writer.add('project.godot',new BlobReader(new Blob([project])));await writer.add(`${state.scene.name||'Main'}.tscn`,new BlobReader(new Blob([sceneToTscn()])));await writer.add('ninja/project.ninja.json',new BlobReader(new Blob([ninjaProjectText()])));const blob=await writer.close();download(blob,'NinjaEngine_Godot_Project.zip');log('Godot 4 starter project + Ninja model exported.');}catch(e){log(`Export failed: ${e.message}`,'error');}}
 function download(blob,name){const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);}
 function tick(now){const dt=Math.min(.05,(now-state.last)/1000);state.last=now;state.frame++;state.runtime.animationTime=(state.runtime.animationTime||0)+dt;updateRuntime(dt);if(state.frame%12===0){state.fps=Math.round(1/dt);$('fps').textContent=state.fps;const mem=performance.memory?.usedJSHeapSize;if(mem)$('memory').textContent=archiveSizeLabel(mem);if($('debugger'))$('debugger').innerHTML=state.playing?`<div><i>●</i> Runtime: running</div><div>Entities: ${state.runtime.entities.size}</div><div>Areas: ${state.runtime.areas.size}</div><div>Events: ${state.runtime.events.slice(0,8).map(escapeHtml).join('<br>')||'No area events.'}</div>`:'<div><i>●</i> Runtime stopped.</div>';}draw();requestAnimationFrame(tick);}
