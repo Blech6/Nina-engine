@@ -183,13 +183,15 @@
           <button class="bottom-tab active" data-bottom="output">Saída</button>
           <button class="bottom-tab" data-bottom="debugger">Depurador</button>
           <button class="bottom-tab" data-bottom="errors">Erros <b id="errorCount">0</b></button>
-          <button class="bottom-tab planned" disabled>Áudio</button>
-          <button class="bottom-tab planned" disabled>Animação</button><button class="bottom-tab planned" disabled>Editor de Shader</button>
+          <button class="bottom-tab" data-bottom="audio">Áudio</button>
+          <button class="bottom-tab" data-bottom="animation">Animação</button><button class="bottom-tab planned" disabled>Editor de Shader</button>
           <span></span><button title="Fechar painel">⌄</button>
         </div>
         <div id="console" class="console"><div><i>●</i> Ninja Engine initialized.</div></div>
         <div id="debugger" class="console" hidden>Runtime debugger ready.</div>
-        <div id="errors" class="console" hidden>No errors.</div>
+        <div id="errors" class="console" hidden>Nenhum erro.</div>
+        <div id="audio" class="bottom-tool" hidden><div class="bottom-tool-header"><strong>Áudio</strong><span>Bus Mestre</span><button id="audioMuteBtn">🔊</button></div><div class="audio-bus"><span>Master</span><input id="audioVolume" type="range" min="0" max="100" value="80"><b id="audioVolumeLabel">80%</b></div></div>
+        <div id="animation" class="bottom-tool animation-bottom" hidden><div class="bottom-tool-header"><strong>SpriteFrames / Animação</strong><span id="bottomAnimationName">Idle</span><button id="openSpriteEditorBtn">Abrir Editor de SpriteFrames</button></div><div class="animation-mini-controls"><button id="bottomAnimPlay">▶</button><button id="bottomAnimStop">■</button><label>FPS <input id="bottomAnimFps" type="number" min="1" max="60" value="12"></label><label><input id="bottomAnimLoop" type="checkbox" checked> Loop</label><span>Use o workspace Sprite / Animação para recortar e organizar os quadros.</span></div></div>
       </section>
     </main>
 
