@@ -124,29 +124,55 @@
         <div class="viewport-overlay"><span id="coord">x: 0 y: 0</span></div>
       </div>
       <section class="sprite-workspace" id="spriteWorkspace" hidden>
-        <aside class="sprite-left">
-          <div class="sprite-tabs"><button class="active">Camadas</button><button>Cels</button><button>⋮</button></div>
-          <div class="sprite-layer-tools"><button>＋</button><button>▱</button><button>⧉</button><button>×</button></div>
-          <div class="sprite-layers"><button class="active">▣ Corpo</button><button>▣ Cabelo</button><button>▣ Roupa</button><button>▣ Olhos</button><button>▣ Efeitos</button></div>
-          <div class="sprite-palette-title">Paleta <button>⋮</button></div>
-          <div class="sprite-palette"><button style="--sw:#0f1720"></button><button style="--sw:#24344a"></button><button style="--sw:#3e5b7c"></button><button style="--sw:#6e8fb0"></button><button style="--sw:#e6d8bd"></button><button style="--sw:#dca47c"></button><button style="--sw:#8d5a3b"></button><button style="--sw:#4a2f26"></button><button style="--sw:#f0e9df"></button><button style="--sw:#ba3141"></button><button style="--sw:#f5bd43"></button><button style="--sw:#6cba6b"></button><button style="--sw:#4e87d6"></button><button style="--sw:#7955a7"></button><button style="--sw:#ffffff"></button><button style="--sw:#000000"></button></div>
-        </aside>
-        <div class="sprite-center">
-          <div class="sprite-toolbar"><span>✎　◫　▧　#　⌾　↔　↕　○　◇</span><span>Zoom 800%　 Grade ✓　 Onion Skin ✓</span></div>
-          <div class="sprite-canvas-wrap"><div class="sprite-preview"><div class="sprite-hair"></div><div class="sprite-head"></div><div class="sprite-body"></div></div></div>
-          <div class="animation-tabs"><button class="active">Idle</button><button>Walk</button><button>Run</button><button>Attack</button><button>Jump</button><button id="newAnimationBtn">＋</button><label><input id="keepCharacterCheck" type="checkbox" checked> Manter personagem ao criar nova animação/aba</label></div>
-          <div class="frame-timeline">
-            <div class="timeline-toolbar"><button id="spritePlayBtn">▶</button><button id="spritePauseBtn">Ⅱ</button><button id="spriteStopBtn">■</button><label>Loop <input id="spriteLoop" type="checkbox" checked></label><label>FPS <input id="spriteFps" type="number" value="12" min="1" max="60"></label><span id="spriteDuration">Duração 0.083s</span></div>
-            <div id="frameStrip" class="frame-strip"></div>
-            <div class="frame-actions"><button id="addFrameBtn">＋ Adicionar quadro</button><button id="duplicateFrameBtn">⧉ Duplicar</button><button>⇆ Reordenar</button><button>✂ Recortar spritesheet</button></div>
-          </div>
-        </div>
-        <aside class="sprite-right">
-          <div class="sprite-right-tabs"><button class="active">Sprite</button><button>Propriedades</button><button>⋮</button></div>
-          <div class="sprite-node-title">AnimatedSprite2D</div>
-          <div class="sprite-props"><h4>PROPORÇÕES</h4><label>Largura <input id="spriteWidth" type="number" value="64"></label><label>Altura <input id="spriteHeight" type="number" value="64"></label><label>Escala X <input id="spriteScaleX" type="number" step="0.1" value="1"></label><label>Escala Y <input id="spriteScaleY" type="number" step="0.1" value="1"></label><label class="check"><input id="lockRatio" type="checkbox" checked> Manter proporção</label><h4>PIVÔ / ORIGEM</h4><select><option>Centro</option><option>Superior esquerdo</option><option>Base central</option></select><h4>IMPORTAÇÃO</h4><label class="check"><input type="checkbox" checked> Pixel Perfect / Nearest</label><label class="check"><input type="checkbox" checked> Recortar transparência</label><label class="check keep"><input id="keepCharacterSide" type="checkbox" checked> Manter personagem ao criar nova aba/animação</label><h4>PRESETS DE TAMANHO</h4><div class="size-presets"><button data-size="16">16×16</button><button data-size="32">32×32</button><button data-size="64">64×64</button><button data-size="128">128×128</button></div></div>
-        </aside>
-      </section>
+  <aside class="sprite-sheet-panel">
+    <div class="sprite-panel-title">Spritesheet</div>
+    <div class="sprite-import-zone">
+      <strong>Arraste uma spritesheet aqui</strong>
+      <span>ou importe PNG / WEBP</span>
+      <button id="spriteImportBtn">Importar Spritesheet</button>
+      <input id="spriteImageInput" type="file" accept="image/png,image/webp,image/jpeg" hidden>
+    </div>
+    <div class="sprite-sheet-options">
+      <label>Largura do quadro <input id="spriteWidth" type="number" value="64" min="1"></label>
+      <label>Altura do quadro <input id="spriteHeight" type="number" value="64" min="1"></label>
+      <label>Colunas <input id="spriteColumns" type="number" value="4" min="1"></label>
+      <label>Linhas <input id="spriteRows" type="number" value="1" min="1"></label>
+      <label class="check"><input id="lockRatio" type="checkbox" checked> Manter proporção</label>
+      <label class="check"><input id="keepCharacterCheck" type="checkbox" checked> Reutilizar spritesheet em novas animações</label>
+    </div>
+  </aside>
+  <div class="sprite-center">
+    <div class="sprite-toolbar"><div><button id="spriteSelectTool" class="active">↖</button><button>✥</button><button>⌖</button><button>▦</button></div><div><button id="spriteZoomOut">−</button><span id="spriteZoomLabel">100%</span><button id="spriteZoomIn">＋</button><label><input id="onionSkinCheck" type="checkbox"> Onion Skin</label></div></div>
+    <div class="sprite-canvas-wrap"><canvas id="spriteCanvas" width="896" height="416"></canvas><div id="spriteEmptyHint" class="sprite-empty-hint">Importe uma spritesheet para começar</div></div>
+    <div class="animation-tabs" id="animationTabs"><button class="active" data-animation="Idle">Idle</button><button data-animation="Walk">Walk</button><button data-animation="Run">Run</button><button data-animation="Attack">Attack</button><button data-animation="Jump">Jump</button><button id="newAnimationBtn">＋</button></div>
+    <div class="frame-timeline">
+      <div class="timeline-toolbar"><button id="spritePlayBtn">▶</button><button id="spritePauseBtn">Ⅱ</button><button id="spriteStopBtn">■</button><label>Loop <input id="spriteLoop" type="checkbox" checked></label><label>FPS <input id="spriteFps" type="number" value="12" min="1" max="60"></label><span id="spriteDuration">0.083 s</span><span class="timeline-spacer"></span><button id="autoSliceBtn">Recortar automaticamente</button></div>
+      <div id="frameStrip" class="frame-strip"></div>
+      <div class="frame-actions"><button id="addFrameBtn">＋ Adicionar</button><button id="duplicateFrameBtn">⧉ Duplicar</button><button id="removeFrameBtn">− Remover</button><button id="moveFrameLeftBtn">←</button><button id="moveFrameRightBtn">→</button></div>
+    </div>
+  </div>
+  <aside class="sprite-right">
+    <div class="sprite-right-tabs"><button class="active">Animação</button><button>Importação</button></div>
+    <div class="sprite-node-title">SpriteFrames</div>
+    <div class="sprite-props">
+      <h4>ANIMAÇÃO</h4>
+      <label>Nome <input id="animationName" value="Idle"></label>
+      <label>FPS <input id="spriteFpsSide" type="number" value="12" min="1" max="60"></label>
+      <label class="check"><input id="spriteLoopSide" type="checkbox" checked> Loop</label>
+      <h4>QUADRO</h4>
+      <label>Largura <input id="spriteWidthSide" type="number" value="64" min="1"></label>
+      <label>Altura <input id="spriteHeightSide" type="number" value="64" min="1"></label>
+      <label>Escala X <input id="spriteScaleX" type="number" step="0.1" value="1"></label>
+      <label>Escala Y <input id="spriteScaleY" type="number" step="0.1" value="1"></label>
+      <h4>IMPORTAÇÃO</h4>
+      <label class="check"><input id="nearestFilter" type="checkbox" checked> Filtro Nearest</label>
+      <label class="check"><input id="trimTransparent" type="checkbox"> Recortar transparência</label>
+      <label class="check keep"><input id="keepCharacterSide" type="checkbox" checked> Manter spritesheet ao criar animação</label>
+      <h4>PRESETS</h4>
+      <div class="size-presets"><button data-size="16">16×16</button><button data-size="32">32×32</button><button data-size="64">64×64</button><button data-size="128">128×128</button></div>
+    </div>
+  </aside>
+</section>
       <section class="bottom-panel">
         <div class="bottom-tabs">
           <button class="bottom-tab active" data-bottom="output">Saída</button>
