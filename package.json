@@ -6,7 +6,9 @@
   "main": "desktop/main.cjs",
   "scripts": {
     "start": "electron .",
-    "desktop:build": "electron-builder --win nsis portable",
+    "desktop:build": "npm run desktop:installer && npm run desktop:portable",
+    "desktop:installer": "electron-builder --win nsis --publish never -c.artifactName=Ninja-Engine-Setup-v${version}-${arch}.${ext}",
+    "desktop:portable": "electron-builder --win portable --publish never -c.artifactName=Ninja-Engine-Portable-v${version}-${arch}.${ext}",
     "android:prepare": "node tools/android-prepare.cjs",
     "android:build": "node tools/android-build.cjs",
     "android:debug": "node tools/android-build.cjs debug",
