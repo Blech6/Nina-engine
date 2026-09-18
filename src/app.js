@@ -30,9 +30,9 @@ function setScene(s){state.scene=s;state.scene.root=rootForScene(s);state.select
 let pmSelected=-1;
 function recentProjects(){try{return JSON.parse(localStorage.getItem('ninjaRecentProjects')||'[]');}catch{return [];}}
 function saveRecentProjects(items){localStorage.setItem('ninjaRecentProjects',JSON.stringify(items.slice(0,30)));}
-function rememberProject(name,filePath=''){
+function rememberProject(name,filePath='',snapshot=null){
   const items=recentProjects().filter(x=>x.name!==name);
-  items.unshift({name,path:filePath||'Projeto local',filePath:filePath||'',updated:new Date().toLocaleString('pt-BR')});
+  items.unshift({name,path:filePath||'Projeto Ninja',filePath:filePath||'',snapshot:snapshot||null,updated:new Date().toLocaleString('pt-BR')});
   saveRecentProjects(items);pmSelected=0;renderProjectManager();
 }
 function renderProjectManager(){
@@ -46,8 +46,24 @@ function renderProjectManager(){
 function openEditor(){$('projectManager').hidden=true;localStorage.setItem('ninjaLastProject',state.project?.name||'');}
 function showProjectManager(){$('projectManager').hidden=false;renderProjectManager();}
 async function reopenRememberedProject(index,run=false){const item=recentProjects()[index];if(!item)return;if(item.filePath&&window.ninjaBridge?.readProjectFile){try{$('statusText').textContent='Abrindo projeto…';const saved=await window.ninjaBridge.readProjectFile(item.filePath);const bytes=saved.data instanceof Uint8Array?saved.data:new Uint8Array(saved.data);const file=new File([bytes],saved.name||item.name+'.zip',{type:'application/zip'});await openZip(file,item.filePath);if(run)$('playBtn').click();return;}catch(err){log('Não foi possível reabrir o projeto salvo: '+err.message,'error');}}if(item.snapshot){state.project=item.snapshot.project||{name:item.name};setScene(item.snapshot.scene);$('projectStatus').textContent=item.name;openEditor();if(run)$('playBtn').click();return;}alert('O arquivo original deste projeto não está mais disponível. Importe-o novamente para atualizar o caminho.');}
-$('pmCreateBtn').onclick=()=>{const name=prompt('Project name:','New RPG Project');if(!name)return;state.project={name};$('projectStatus').textContent=name;newScene();rememberProject(name);openEditor();};
-$('pmImportBtn').onclick=$('pmScanBtn').onclick=()=>$('zipInput').click();
+async function createProject(){
+  const name=prompt('Nome do projeto:','Novo Projeto');
+  if(!name?.trim())return;
+  state.project={name:name.trim()};$('projectStatus').textContent=state.project.name;newScene();
+  state.scene.name='Main';state.scene.root.name='Main';state.scene.root.id='root';
+  rememberProject(state.project.name,'',{project:clone(state.project),scene:clone(state.scene)});
+  openEditor();renderAll();log('Projeto criado: '+state.project.name);
+}
+async function importProject(){
+  if(window.ninjaBridge?.pickProjectZip){
+    try{const picked=await window.ninjaBridge.pickProjectZip();if(!picked)return;const bytes=picked.data instanceof Uint8Array?picked.data:new Uint8Array(picked.data);await openZip(new File([bytes],picked.name,{type:'application/zip'}),picked.filePath);return;}
+    catch(err){log('Falha ao importar projeto: '+err.message,'error');alert('Não foi possível importar o projeto.');return;}
+  }
+  $('zipInput').value='';$('zipInput').click();
+}
+$('pmCreateBtn').onclick=createProject;
+$('pmImportBtn').onclick=importProject;
+$('pmScanBtn').onclick=importProject;
 $('pmEditBtn').onclick=()=>reopenRememberedProject(pmSelected,false);
 $('pmRunBtn').onclick=()=>reopenRememberedProject(pmSelected,true);
 $('pmRenameBtn').onclick=()=>{const items=recentProjects(),item=items[pmSelected];if(!item)return;const name=prompt('New project name:',item.name);if(name){item.name=name;saveRecentProjects(items);renderProjectManager();}};
@@ -70,8 +86,8 @@ $('closeConnectionsBtn').onclick=()=>$('connectionsPanel').hidden=true;
 $('mobileMenuBtn').onclick=()=>{document.querySelector('.left-panel').classList.toggle('mobile-open');document.querySelector('.right-panel').classList.remove('mobile-open');};
 $('mobileInspectorBtn').onclick=()=>{document.querySelector('.right-panel').classList.toggle('mobile-open');document.querySelector('.left-panel').classList.remove('mobile-open');};
 $('aiConnectBtn').onclick=()=>testConnection('ai','aiStatus');$('notionConnectBtn').onclick=()=>testConnection('notion','notionStatus');$('githubConnectBtn').onclick=()=>testConnection('github','githubStatus');
-$('openBtn').onclick=()=>$('zipInput').click();
-$('zipInput').onchange=e=>e.target.files[0]&&openZip(e.target.files[0]);
+$('openBtn').onclick=importProject;
+$('zipInput').onchange=e=>{const file=e.target.files?.[0];if(file)openZip(file,window.ninjaBridge?.filePath?window.ninjaBridge.filePath(file):'');e.target.value='';};
 $('playBtn').onclick=()=>{resetRuntime();state.playing=true;state.mode='game';syncModes();log('Runtime started.');};
 $('stopBtn').onclick=()=>{state.playing=false;state.mode='2d';syncModes();log('Play mode stopped.');};
 $('gridBtn').onclick=()=>{state.grid=!state.grid;$('gridBtn').classList.toggle('active',state.grid);draw();};let snapEnabled=true,gridStep=16;$('snapBtn').onclick=()=>{snapEnabled=!snapEnabled;$('snapBtn').classList.toggle('active',snapEnabled);if($('snapGridCheck'))$('snapGridCheck').checked=snapEnabled;};
