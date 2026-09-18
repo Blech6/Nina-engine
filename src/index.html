@@ -58,7 +58,7 @@
       <button class="mode planned" disabled title="Planejado">⬡ <span>3D</span></button>
       <button class="mode planned" disabled title="Planejado">▰ <span>Script</span></button>
       <button class="mode" data-mode="game">♟ <span>Jogo</span></button>
-      <button class="mode planned" disabled>⇩ <span>Biblioteca de Recursos</span></button>
+      <button class="mode" data-mode="sprite">✦ <span>Sprite / Animação</span></button><button class="mode planned" disabled>⇩ <span>Biblioteca de Recursos</span></button>
     </div>
     <div class="run-actions">
       <button id="playBtn" class="run" title="Executar projeto">▶</button>
@@ -123,6 +123,30 @@
         <div class="viewport-ruler ruler-y"></div><div class="axis-label x">X</div><div class="axis-label y">Y</div>
         <div class="viewport-overlay"><span id="coord">x: 0 y: 0</span></div>
       </div>
+      <section class="sprite-workspace" id="spriteWorkspace" hidden>
+        <aside class="sprite-left">
+          <div class="sprite-tabs"><button class="active">Camadas</button><button>Cels</button><button>⋮</button></div>
+          <div class="sprite-layer-tools"><button>＋</button><button>▱</button><button>⧉</button><button>×</button></div>
+          <div class="sprite-layers"><button class="active">▣ Corpo</button><button>▣ Cabelo</button><button>▣ Roupa</button><button>▣ Olhos</button><button>▣ Efeitos</button></div>
+          <div class="sprite-palette-title">Paleta <button>⋮</button></div>
+          <div class="sprite-palette"><button style="--sw:#0f1720"></button><button style="--sw:#24344a"></button><button style="--sw:#3e5b7c"></button><button style="--sw:#6e8fb0"></button><button style="--sw:#e6d8bd"></button><button style="--sw:#dca47c"></button><button style="--sw:#8d5a3b"></button><button style="--sw:#4a2f26"></button><button style="--sw:#f0e9df"></button><button style="--sw:#ba3141"></button><button style="--sw:#f5bd43"></button><button style="--sw:#6cba6b"></button><button style="--sw:#4e87d6"></button><button style="--sw:#7955a7"></button><button style="--sw:#ffffff"></button><button style="--sw:#000000"></button></div>
+        </aside>
+        <div class="sprite-center">
+          <div class="sprite-toolbar"><span>✎　◫　▧　#　⌾　↔　↕　○　◇</span><span>Zoom 800%　 Grade ✓　 Onion Skin ✓</span></div>
+          <div class="sprite-canvas-wrap"><div class="sprite-preview"><div class="sprite-hair"></div><div class="sprite-head"></div><div class="sprite-body"></div></div></div>
+          <div class="animation-tabs"><button class="active">Idle</button><button>Walk</button><button>Run</button><button>Attack</button><button>Jump</button><button id="newAnimationBtn">＋</button><label><input id="keepCharacterCheck" type="checkbox" checked> Manter personagem ao criar nova animação/aba</label></div>
+          <div class="frame-timeline">
+            <div class="timeline-toolbar"><button id="spritePlayBtn">▶</button><button id="spritePauseBtn">Ⅱ</button><button id="spriteStopBtn">■</button><label>Loop <input id="spriteLoop" type="checkbox" checked></label><label>FPS <input id="spriteFps" type="number" value="12" min="1" max="60"></label><span id="spriteDuration">Duração 0.083s</span></div>
+            <div id="frameStrip" class="frame-strip"></div>
+            <div class="frame-actions"><button id="addFrameBtn">＋ Adicionar quadro</button><button id="duplicateFrameBtn">⧉ Duplicar</button><button>⇆ Reordenar</button><button>✂ Recortar spritesheet</button></div>
+          </div>
+        </div>
+        <aside class="sprite-right">
+          <div class="sprite-right-tabs"><button class="active">Sprite</button><button>Propriedades</button><button>⋮</button></div>
+          <div class="sprite-node-title">AnimatedSprite2D</div>
+          <div class="sprite-props"><h4>PROPORÇÕES</h4><label>Largura <input id="spriteWidth" type="number" value="64"></label><label>Altura <input id="spriteHeight" type="number" value="64"></label><label>Escala X <input id="spriteScaleX" type="number" step="0.1" value="1"></label><label>Escala Y <input id="spriteScaleY" type="number" step="0.1" value="1"></label><label class="check"><input id="lockRatio" type="checkbox" checked> Manter proporção</label><h4>PIVÔ / ORIGEM</h4><select><option>Centro</option><option>Superior esquerdo</option><option>Base central</option></select><h4>IMPORTAÇÃO</h4><label class="check"><input type="checkbox" checked> Pixel Perfect / Nearest</label><label class="check"><input type="checkbox" checked> Recortar transparência</label><label class="check keep"><input id="keepCharacterSide" type="checkbox" checked> Manter personagem ao criar nova aba/animação</label><h4>PRESETS DE TAMANHO</h4><div class="size-presets"><button data-size="16">16×16</button><button data-size="32">32×32</button><button data-size="64">64×64</button><button data-size="128">128×128</button></div></div>
+        </aside>
+      </section>
       <section class="bottom-panel">
         <div class="bottom-tabs">
           <button class="bottom-tab active" data-bottom="output">Saída</button>
