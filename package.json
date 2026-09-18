@@ -1,0 +1,17 @@
+{
+  "name": "ninja-engine",
+  "version": "0.9.0",
+  "private": true,
+  "description": "Ninja Engine — standalone 2D RPG editor/runtime with desktop and Android packaging",
+  "main": "desktop/main.cjs",
+  "scripts": {
+    "start": "electron .",
+    "android:prepare": "node tools/android-prepare.cjs",
+    "android:build": "node tools/android-build.cjs",
+    "android:debug": "node tools/android-build.cjs debug",
+    "android:release": "node tools/android-build.cjs release"
+  },
+  "devDependencies": {
+    "electron": "^36.0.0"
+  }
+}

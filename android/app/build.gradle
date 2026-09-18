@@ -1,0 +1,5 @@
+plugins { id 'com.android.application' }
+
+android { namespace 'com.ninjaengine.app'; compileSdk 35
+    defaultConfig { applicationId 'com.ninjaengine.app'; minSdk 24; targetSdk 35; versionCode 8; versionName '0.8.0' }
+}

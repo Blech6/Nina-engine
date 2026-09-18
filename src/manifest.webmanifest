@@ -1,0 +1,4 @@
+{
+  "name":"Ninja Engine","short_name":"Ninja Engine","start_url":"./index.html","display":"standalone","orientation":"any",
+  "background_color":"#090d14","theme_color":"#090d14","description":"2D RPG editor and runtime"
+}
