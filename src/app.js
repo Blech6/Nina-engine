@@ -101,7 +101,33 @@ function openNodeDialog(){
   modal.querySelectorAll('[data-close]').forEach(b=>b.onclick=()=>modal.remove());
   $('nodeCreateConfirm').onclick=()=>{if(!chosen)return;const before=snapshot();const n=addNode(chosen);state.selected=n;commit(`Create ${chosen}`,before);modal.remove();renderAll();};
 }
-function syncModes(){document.querySelectorAll('[data-mode]').forEach(x=>x.classList.toggle('active',x.dataset.mode===state.mode));draw();}
+
+function initSpriteWorkspace(){
+  const strip=$('frameStrip'); if(!strip)return;
+  const frames=[1,2,3,4]; let active=0; let playing=false; let timer=null;
+  const render=()=>{strip.innerHTML=frames.map((n,i)=>`<button class="frame-card ${i===active?'active':''}" data-frame="${i}"><div class="frame-preview"></div><span>${i+1}</span></button>`).join('');strip.querySelectorAll('[data-frame]').forEach(b=>b.onclick=()=>{active=Number(b.dataset.frame);render();});};
+  render();
+  const fps=$('spriteFps'); const duration=$('spriteDuration');
+  const updateDuration=()=>{const v=Math.max(1,Number(fps.value)||12);duration.textContent=`Duração ${(1/v).toFixed(3)}s`;if(playing){clearInterval(timer);timer=setInterval(step,1000/v);}};
+  const step=()=>{active=(active+1)%frames.length;render();};
+  fps.oninput=updateDuration; updateDuration();
+  $('spritePlayBtn').onclick=()=>{if(playing)return;playing=true;timer=setInterval(step,1000/Math.max(1,Number(fps.value)||12));};
+  $('spritePauseBtn').onclick=()=>{playing=false;clearInterval(timer);};
+  $('spriteStopBtn').onclick=()=>{playing=false;clearInterval(timer);active=0;render();};
+  $('addFrameBtn').onclick=()=>{frames.push(frames.length+1);active=frames.length-1;render();};
+  $('duplicateFrameBtn').onclick=()=>{frames.splice(active+1,0,frames[active]);active++;render();};
+  const keepA=$('keepCharacterCheck'),keepB=$('keepCharacterSide');const syncKeep=e=>{keepA.checked=e.target.checked;keepB.checked=e.target.checked;};keepA.onchange=syncKeep;keepB.onchange=syncKeep;
+  const w=$('spriteWidth'),h=$('spriteHeight'),lock=$('lockRatio');let ratio=(Number(w.value)||64)/(Number(h.value)||64);
+  w.onchange=()=>{if(lock.checked)h.value=Math.max(1,Math.round(Number(w.value)/ratio));applySpriteSize();};
+  h.onchange=()=>{if(lock.checked)w.value=Math.max(1,Math.round(Number(h.value)*ratio));applySpriteSize();};
+  $('spriteScaleX').onchange=applySpriteSize;$('spriteScaleY').onchange=applySpriteSize;
+  document.querySelectorAll('[data-size]').forEach(b=>b.onclick=()=>{w.value=b.dataset.size;h.value=b.dataset.size;ratio=1;applySpriteSize();});
+  function applySpriteSize(){const preview=document.querySelector('.sprite-preview');if(!preview)return;const sx=Number($('spriteScaleX').value)||1,sy=Number($('spriteScaleY').value)||1;preview.style.width=Math.max(16,Number(w.value))*2.75+'px';preview.style.height=Math.max(16,Number(h.value))*3.25+'px';preview.style.transform=`scale(${sx},${sy})`;}
+  $('newAnimationBtn').onclick=()=>{const name=prompt('Nome da animação:','Nova animação');if(!name)return;const btn=document.createElement('button');btn.textContent=name;btn.onclick=()=>{document.querySelectorAll('.animation-tabs button').forEach(x=>x.classList.remove('active'));btn.classList.add('active');};$('newAnimationBtn').before(btn);if(!keepA.checked){frames.splice(0,frames.length,1);active=0;render();}};
+}
+initSpriteWorkspace();
+
+function syncModes(){document.querySelectorAll('[data-mode]').forEach(x=>x.classList.toggle('active',x.dataset.mode===state.mode));const center=document.querySelector('.center');const sw=$('spriteWorkspace');if(center&&sw){const sprite=state.mode==='sprite';center.classList.toggle('sprite-mode',sprite);sw.hidden=!sprite;}draw();}
 function switchLeftTab(tab){document.querySelectorAll('[data-tab]').forEach(x=>x.classList.toggle('active',x.dataset.tab===tab));$('scenePane').hidden=tab!=='scene';$('filesPane').hidden=tab!=='files';}
 function switchBottomTab(tab){activeBottom=tab;const panel=document.querySelector('.bottom-panel');panel.classList.add('expanded');document.querySelectorAll('[data-bottom]').forEach(x=>x.classList.toggle('active',x.dataset.bottom===tab));$('console').hidden=tab!=='output';$('debugger').hidden=tab!=='debugger';$('errors').hidden=tab!=='errors';}
 function collapseBottomPanel(){activeBottom=null;document.querySelector('.bottom-panel').classList.remove('expanded');document.querySelectorAll('[data-bottom]').forEach(x=>x.classList.remove('active'));for(const id of ['console','debugger','errors'])$(id).hidden=true;}
