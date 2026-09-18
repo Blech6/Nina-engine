@@ -30,9 +30,9 @@ function setScene(s){state.scene=s;state.scene.root=rootForScene(s);state.select
 let pmSelected=-1;
 function recentProjects(){try{return JSON.parse(localStorage.getItem('ninjaRecentProjects')||'[]');}catch{return [];}}
 function saveRecentProjects(items){localStorage.setItem('ninjaRecentProjects',JSON.stringify(items.slice(0,30)));}
-function rememberProject(name){
+function rememberProject(name,filePath=''){
   const items=recentProjects().filter(x=>x.name!==name);
-  items.unshift({name,path:'Imported ZIP project',updated:new Date().toLocaleString('pt-BR')});
+  items.unshift({name,path:filePath||'Projeto local',filePath:filePath||'',updated:new Date().toLocaleString('pt-BR')});
   saveRecentProjects(items);pmSelected=0;renderProjectManager();
 }
 function renderProjectManager(){
@@ -43,11 +43,13 @@ function renderProjectManager(){
   document.querySelectorAll('.pm-project').forEach(el=>el.onclick=()=>{pmSelected=Number(el.dataset.index);renderProjectManager();});
   for(const id of ['pmEditBtn','pmRunBtn','pmRenameBtn','pmDuplicateBtn','pmRemoveBtn'])$(id).disabled=pmSelected<0||!recentProjects()[pmSelected];
 }
-function openEditor(){$('projectManager').hidden=true;}
+function openEditor(){$('projectManager').hidden=true;localStorage.setItem('ninjaLastProject',state.project?.name||'');}
+function showProjectManager(){$('projectManager').hidden=false;renderProjectManager();}
+async function reopenRememberedProject(index,run=false){const item=recentProjects()[index];if(!item)return;if(item.filePath&&window.ninjaBridge?.readProjectFile){try{$('statusText').textContent='Abrindo projeto…';const saved=await window.ninjaBridge.readProjectFile(item.filePath);const bytes=saved.data instanceof Uint8Array?saved.data:new Uint8Array(saved.data);const file=new File([bytes],saved.name||item.name+'.zip',{type:'application/zip'});await openZip(file,item.filePath);if(run)$('playBtn').click();return;}catch(err){log('Não foi possível reabrir o projeto salvo: '+err.message,'error');}}if(item.snapshot){state.project=item.snapshot.project||{name:item.name};setScene(item.snapshot.scene);$('projectStatus').textContent=item.name;openEditor();if(run)$('playBtn').click();return;}alert('O arquivo original deste projeto não está mais disponível. Importe-o novamente para atualizar o caminho.');}
 $('pmCreateBtn').onclick=()=>{const name=prompt('Project name:','New RPG Project');if(!name)return;state.project={name};$('projectStatus').textContent=name;newScene();rememberProject(name);openEditor();};
 $('pmImportBtn').onclick=$('pmScanBtn').onclick=()=>$('zipInput').click();
-$('pmEditBtn').onclick=()=>$('zipInput').click();
-$('pmRunBtn').onclick=()=>{$('zipInput').click();};
+$('pmEditBtn').onclick=()=>reopenRememberedProject(pmSelected,false);
+$('pmRunBtn').onclick=()=>reopenRememberedProject(pmSelected,true);
 $('pmRenameBtn').onclick=()=>{const items=recentProjects(),item=items[pmSelected];if(!item)return;const name=prompt('New project name:',item.name);if(name){item.name=name;saveRecentProjects(items);renderProjectManager();}};
 $('pmDuplicateBtn').onclick=()=>{const items=recentProjects(),item=items[pmSelected];if(!item)return;items.splice(pmSelected+1,0,{...item,name:item.name+' Copy',updated:new Date().toLocaleString('pt-BR')});saveRecentProjects(items);pmSelected++;renderProjectManager();};
 $('pmRemoveBtn').onclick=()=>{const items=recentProjects();if(!items[pmSelected])return;items.splice(pmSelected,1);saveRecentProjects(items);pmSelected=-1;renderProjectManager();};
@@ -240,9 +242,9 @@ function duplicateSelected(){if(!state.selected)return;const before=snapshot(),o
 function newScene(){const before=state.scene?snapshot():null;setScene({path:'',name:'New Scene',root:node('Node2D','NewScene',0,0,0,0,''),nodes:[]});state.scene.root.id='root';markDirty();if(before)state.undo=[];log('New scene created.');}
 function findNodeAt(x,y){for(let i=state.scene.nodes.length-1;i>=0;i--){const n=state.scene.nodes[i];if(!n.visible)continue;const w=worldTransform(n),a=(w.rotation||0)*Math.PI/180,dx=x-w.x,dy=y-w.y,rx=dx*Math.cos(a)+dy*Math.sin(a),ry=-dx*Math.sin(a)+dy*Math.cos(a);if(Math.abs(rx)<=n.w*(w.sx??1)/2&&Math.abs(ry)<=n.h*(w.sy??1)/2)return n;}return null;}
 
-async function openZip(file){
+async function openZip(file,rememberedPath=''){
   state.zip=file;state.entries.clear();state.cache.clear();state.cacheBytes=0;state.errors=[];state.undo=[];state.redo=[];$('statusText').textContent='Reading archive…';$('projectStatus').textContent='Importing…';log(`Opening ${file.name}`);
-  try{const reader=new ZipReader(new BlobReader(file));for(const e of await reader.getEntries())state.entries.set(e.filename,e);await reader.close();state.files=[...state.entries.keys()].sort((a,b)=>a.localeCompare(b));state.root=detectRoot();const pp=state.root+'project.godot';state.project=state.entries.has(pp)?parseGodot(await readText(pp)):{name:file.name.replace(/\.zip$/i,'')};state.projectModel.project=clone(state.project);$('projectStatus').textContent=state.project.name||file.name;$('memory').textContent=archiveSizeLabel(file.size);$('projectInfo').innerHTML=`<div><b>${escapeHtml(state.project.name||file.name)}</b></div><div>${state.entries.size.toLocaleString()} files</div><div>Godot features: ${escapeHtml(state.project.features||'unknown')}</div><div class="muted">Ninja intermediate model active</div>`;rememberProject(state.project.name||file.name);openEditor();renderFiles();renderAssets();if(state.project.main_scene&&state.entries.has(resolvePath(state.project.main_scene)))await loadScene(resolvePath(state.project.main_scene));else refreshConnections();
+  try{const reader=new ZipReader(new BlobReader(file));for(const e of await reader.getEntries())state.entries.set(e.filename,e);await reader.close();state.files=[...state.entries.keys()].sort((a,b)=>a.localeCompare(b));state.root=detectRoot();const pp=state.root+'project.godot';state.project=state.entries.has(pp)?parseGodot(await readText(pp)):{name:file.name.replace(/\.zip$/i,'')};state.projectModel.project=clone(state.project);$('projectStatus').textContent=state.project.name||file.name;$('memory').textContent=archiveSizeLabel(file.size);$('projectInfo').innerHTML=`<div><b>${escapeHtml(state.project.name||file.name)}</b></div><div>${state.entries.size.toLocaleString()} files</div><div>Godot features: ${escapeHtml(state.project.features||'unknown')}</div><div class="muted">Ninja intermediate model active</div>`;rememberProject(state.project.name||file.name,rememberedPath||(window.ninjaBridge?.filePath?window.ninjaBridge.filePath(file):''));openEditor();renderFiles();renderAssets();if(state.project.main_scene&&state.entries.has(resolvePath(state.project.main_scene)))await loadScene(resolvePath(state.project.main_scene));else refreshConnections();
 setScene({path:'',name:'Main',root:node('Node2D','Main',0,0,0,0,''),nodes:[]});$('statusText').textContent='Project imported';log(`Indexed ${state.entries.size.toLocaleString()} archive entries.`);await buildCompatibilityReport();}
   catch(err){$('statusText').textContent='Import failed';log(err.message,'error');console.error(err);}
 }
