@@ -205,3 +205,12 @@ button,input,select{font:inherit}
 .node-dialog-title{height:31px!important;background:#101010!important}.node-type-list,.node-sidebox,.node-description{background:#202020!important}
 .node-dialog-body input{background:#171717!important;border:1px solid var(--gd-accent)!important}
 .node-dialog-actions button{background:#414141!important}
+
+/* Functional Godot dock behavior */
+.bottom-panel{height:38px!important;min-height:38px;transition:height .12s ease;overflow:hidden}
+.bottom-panel.expanded{height:220px!important}
+.bottom-panel .console{display:none!important;height:182px!important;overflow:auto;background:#181818!important;border-top:1px solid #111!important;padding:8px 12px!important}
+.bottom-panel.expanded .console:not([hidden]){display:block!important}
+.bottom-tab.active{background:#303030!important;color:#fff!important;border-top:2px solid var(--gd-accent)!important}
+.node-dialog-backdrop{backdrop-filter:blur(1px)}
+.node-dialog button:focus-visible,.tool:focus-visible,.mode:focus-visible,.menus button:focus-visible{outline:1px solid var(--gd-accent);outline-offset:-1px}
