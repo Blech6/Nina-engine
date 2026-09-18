@@ -124,6 +124,18 @@ initEditorMenus();
 
 initSceneTabsAndFiles();
 
+function initBottomTools(){
+  const vol=$('audioVolume'),label=$('audioVolumeLabel'),mute=$('audioMuteBtn');let muted=false,last=80;
+  if(vol){vol.oninput=()=>{label.textContent=vol.value+'%';if(+vol.value>0){last=+vol.value;muted=false;mute.textContent='🔊';}};mute.onclick=()=>{muted=!muted;if(muted){last=+vol.value||last;vol.value=0;label.textContent='0%';mute.textContent='🔇';}else{vol.value=last;label.textContent=last+'%';mute.textContent='🔊';}};}
+  $('openSpriteEditorBtn').onclick=()=>{state.mode='sprite';syncModes();collapseBottomPanel();};
+  $('bottomAnimPlay').onclick=()=>{$('spritePlayBtn')?.click();};
+  $('bottomAnimStop').onclick=()=>{$('spriteStopBtn')?.click();};
+  $('bottomAnimFps').oninput=()=>{if($('spriteFps')){$('spriteFps').value=$('bottomAnimFps').value;$('spriteFps').dispatchEvent(new Event('input'));}};
+  $('bottomAnimLoop').onchange=()=>{if($('spriteLoop'))$('spriteLoop').checked=$('bottomAnimLoop').checked;};
+}
+
+initBottomTools();
+
 function initSpriteWorkspace(){
   const strip=$('frameStrip'), input=$('spriteImageInput'), canvas=$('spriteCanvas'); if(!strip||!input||!canvas)return;
   const sctx=canvas.getContext('2d',{alpha:true}); sctx.imageSmoothingEnabled=false;
