@@ -196,10 +196,12 @@
     </main>
 
     <aside class="right-panel">
-      <div class="dock-tabs inspector-tabs"><button class="active">Inspetor</button><button>Sinais</button><button>Grupos</button><button class="dock-more">⋮</button></div><div class="inspector-actions"><button>▧＋</button><button>▱</button><button>▣</button><span></span><button>‹</button><button>›</button></div>
-      <div class="filter-row inspector-search"><span>⌕</span><input placeholder="Filtrar Propriedades"></div>
+      <div class="dock-tabs inspector-tabs"><button class="active" data-right-tab="inspector">Inspetor</button><button data-right-tab="signals">Sinais</button><button data-right-tab="groups">Grupos</button><button class="dock-more">⋮</button></div><div class="inspector-actions"><button id="inspectorAddMeta" title="Adicionar metadado">▧＋</button><button title="Carregar recurso">▱</button><button title="Salvar recurso">▣</button><span></span><button title="Anterior">‹</button><button title="Próximo">›</button></div>
+      <div class="filter-row inspector-search"><span>⌕</span><input id="inspectorFilter" placeholder="Filtrar Propriedades"></div>
       <div class="object-header"><span class="object-icon">◇</span><div><strong id="selectedType">—</strong><small>Nó selecionado</small></div></div>
       <div id="inspector" class="inspector"><div class="empty-state"><div class="empty-icon">◇</div><strong>Selecione um nó</strong><span>As propriedades aparecerão aqui.</span></div></div>
+      <div id="signalsPanel" class="right-tool-panel" hidden><div class="right-tool-head"><strong>Sinais</strong><button id="connectSignalBtn">Conectar…</button></div><div id="signalsList"></div></div>
+      <div id="groupsPanel" class="right-tool-panel" hidden><div class="right-tool-head"><strong>Grupos</strong><button id="addGroupBtn">＋</button></div><div id="groupsList"></div></div>
       <section class="project-dock"><div class="dock-title">Project</div><div id="projectInfo" class="project-info"><span class="muted">No project loaded.</span></div></section>
     </aside>
   </div>
