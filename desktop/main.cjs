@@ -48,7 +48,7 @@ ipcMain.handle('ninja:pick-project-folder', async ()=>{
   const r=await dialog.showOpenDialog({title:'Importar/Abrir projeto',properties:['openDirectory']});if(r.canceled||!r.filePaths[0])return null;const dir=r.filePaths[0];
   let meta=null,scene=null;try{meta=JSON.parse(await fs.readFile(path.join(dir,'project.ninja.json'),'utf8'));}catch{}
   if(meta){try{scene=JSON.parse(await fs.readFile(path.join(dir,meta.main_scene||'scenes/Main.json'),'utf8'));}catch{}return {kind:'ninja',name:meta.name||path.basename(dir),filePath:dir,meta,scene};}
-  try{const godot=await fs.readFile(path.join(dir,'project.godot'),'utf8');return {kind:'godot',name:(godot.match(/config\\/name\\s*=\\s*"([^"]+)"/)||[])[1]||path.basename(dir),filePath:dir};}catch{}
+  try{const godot=await fs.readFile(path.join(dir,'project.godot'),'utf8');return {kind:'godot',name:(godot.match(new RegExp('config/name\\\\s*=\\\\s*"([^"]+)"'))||[])[1]||path.basename(dir),filePath:dir};}catch{}
   throw new Error('A pasta não contém project.ninja.json nem project.godot');
 });
 ipcMain.handle('ninja:save-project-folder', async (_e,payload)=>{const dir=payload?.filePath;if(!dir)throw new Error('Projeto sem pasta');await fs.mkdir(path.join(dir,'scenes'),{recursive:true});await fs.writeFile(path.join(dir,'project.ninja.json'),JSON.stringify({engine:'Ninja Engine',version:'0.12',name:payload.name||path.basename(dir),main_scene:'scenes/Main.json'},null,2));await fs.writeFile(path.join(dir,'scenes','Main.json'),JSON.stringify(payload.scene||{},null,2));return {ok:true};});
