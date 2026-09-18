@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, Menu } = require('electron');
+const { app, BrowserWindow, ipcMain, Menu, dialog } = require('electron');
 const path = require('path');
 const fs = require('fs/promises');
 
@@ -34,6 +34,13 @@ ipcMain.handle('ninja:test-connection', async (_e, service)=>{
     }
     return {ok:false,message:'Unknown service'};
   }catch(e){ return {ok:false,message:e.message}; }
+});
+
+ipcMain.handle('ninja:pick-project-zip', async ()=>{
+  const r=await dialog.showOpenDialog({title:'Importar projeto',properties:['openFile'],filters:[{name:'Projeto ZIP',extensions:['zip']}]});
+  if(r.canceled||!r.filePaths[0])return null;
+  const filePath=r.filePaths[0],data=await fs.readFile(filePath);
+  return {name:path.basename(filePath),filePath,data};
 });
 
 ipcMain.handle('ninja:read-project-file', async (_e, filePath)=>{
